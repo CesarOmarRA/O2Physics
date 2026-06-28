@@ -17,7 +17,6 @@
 #include "PWGUD/DataModel/UDTables.h"
 
 #include "Common/DataModel/McCollisionExtra.h"
-#include "Common/DataModel/PIDResponse.h"
 
 #include "Framework/AnalysisDataModel.h"
 #include "Framework/AnalysisTask.h"
@@ -164,12 +163,17 @@ struct upcRhoPrimeAnalysis {
   Configurable<int> minTPCFindableClusters{"minTPCFindableClusters", 70, "Minimum number of findable TPC clusters"};
 
   Configurable<bool> cfgProcessMC{"cfgProcessMC", true, "Process MC data"};
+  
+  // Debug configuration
+  Configurable<int> debugPrintInterval{"debugPrintInterval", 1000, "Print debug info every N events"};
+  Configurable<bool> verboseDebug{"verboseDebug", true, "Print verbose debug information"};
 
   // Define histogram registry for real data analysis
   HistogramRegistry registry{
     "registry",
     {// Event flow histograms
      {"Events/Flow", "Event flow;Cut;Counts", {HistType::kTH1D, {{9, 0, 9}}}},
+     {"Events/FlowDetailed", "Detailed event flow;Cut;Counts", {HistType::kTH1D, {{20, 0, 20}}}},
      {"Events/VertexZ", "Vertex Z;z (cm);Counts", {HistType::kTH1F, {{200, -20, 20}}}},
      {"Events/NumContrib", "Number of contributors;N_{contrib};Counts", {HistType::kTH1F, {{100, 0, 100}}}},
      {"Events/FV0Amplitude", "FV0 amplitude;Amplitude;Counts", {HistType::kTH1F, {{200, 0, 200}}}},
@@ -183,7 +187,7 @@ struct upcRhoPrimeAnalysis {
      {"Tracks/TPCNSigmaPi", "TPC n#sigma for #pi;n#sigma;Counts", {HistType::kTH1F, {{200, -10, 10}}}},
      {"Tracks/TPCChi2NCl", "TPC #chi^{2}/N_{cls};#chi^{2}/N_{cls};Counts", {HistType::kTH1F, {{200, 0, 20}}}},
      {"Tracks/ITSChi2NCl", "ITS #chi^{2}/N_{cls};#chi^{2}/N_{cls};Counts", {HistType::kTH1F, {{200, 0, 50}}}},
-     {"Tracks/RejectionReasons", "Track rejection reasons;Reason;Counts", {HistType::kTH1F, {{12, 0, 12}}}},
+     {"Tracks/RejectionReasons", "Track rejection reasons;Reason;Counts", {HistType::kTH1F, {{15, 0, 15}}}},
      {"Tracks/DCASpectrum", "Track DCA spectrum;DCA (cm);Counts", {HistType::kTH1F, {{100, 0, 5}}}},
      {"Tracks/ChargeDistribution", "Track charge distribution;Charge;Counts", {HistType::kTH1F, {{3, -1.5, 1.5}}}},
      {"Tracks/TPCClusters", "TPC clusters findable;N_{clusters};Counts", {HistType::kTH1F, {{100, 0, 200}}}},
@@ -201,7 +205,7 @@ struct upcRhoPrimeAnalysis {
      {"Cuts/PtBefore", "p_{T} before cuts;p_{T} (GeV/c);Counts", {HistType::kTH1F, {{1000, 0, 1}}}},
      {"Cuts/PtAfter", "p_{T} after cuts;p_{T} (GeV/c);Counts", {HistType::kTH1F, {{1000, 0, 10}}}}}};
 
-  // Define histogram registry for MC analysis
+  // Define histogram registry for MC analysis - CON RANGO CORREGIDO PARA PDG
   HistogramRegistry mcRegistry{
     "mcRegistry",
     {// Event-level MC histograms
@@ -210,11 +214,11 @@ struct upcRhoPrimeAnalysis {
      {"MC/Events/hVertexZ", "MC Vertex Z;z (cm);Counts", {HistType::kTH1F, {{400, -20.0, 20.0}}}},
      {"MC/Events/hNPions", "Number of primary pions;N_{#pi};Counts", {HistType::kTH1F, {{10, -0.5, 9.5}}}},
 
-     // Track-level MC histograms
+     // Track-level MC histograms - RANGO CORREGIDO para PDG codes
      {"MC/Tracks/hPt", "MC Track p_{T};p_{T} (GeV/c);Counts", {HistType::kTH1F, {{200, 0.0, 2.0}}}},
      {"MC/Tracks/hEta", "MC Track #eta;#eta;Counts", {HistType::kTH1F, {{200, -2.0, 2.0}}}},
      {"MC/Tracks/hPhi", "MC Track #phi;#phi;Counts", {HistType::kTH1F, {{200, 0.0, 6.28}}}},
-     {"MC/Tracks/hPdgCode", "PDG codes;PDG code;Counts", {HistType::kTH1F, {{6001, -3000.5, 3000.5}}}},
+     {"MC/Tracks/hPdgCode", "PDG codes;PDG code;Counts", {HistType::kTH1F, {{2000, -1000, 1000}}}},
 
      // System-level MC histograms
      {"MC/System/hM", "MC Invariant Mass;m (GeV/c^{2});Counts", {HistType::kTH1F, {{1000, 0.0, 10.0}}}},
@@ -276,6 +280,22 @@ struct upcRhoPrimeAnalysis {
     hFlow->GetXaxis()->SetBinLabel(7, "PV contrib cut");
     hFlow->GetXaxis()->SetBinLabel(8, "Z vtx cut");
     hFlow->GetXaxis()->SetBinLabel(9, "4 tracks cut");
+    
+    // Detailed flow histogram
+    auto hFlowDetailed = registry.get<TH1>(HIST("Events/FlowDetailed"));
+    hFlowDetailed->GetXaxis()->SetBinLabel(1, "All events");
+    hFlowDetailed->GetXaxis()->SetBinLabel(2, "vtxITSTPC (commented)");
+    hFlowDetailed->GetXaxis()->SetBinLabel(3, "sbp (commented)");
+    hFlowDetailed->GetXaxis()->SetBinLabel(4, "itsROFb");
+    hFlowDetailed->GetXaxis()->SetBinLabel(5, "tfb");
+    hFlowDetailed->GetXaxis()->SetBinLabel(6, "gapSide");
+    hFlowDetailed->GetXaxis()->SetBinLabel(7, "FV0 < cut");
+    hFlowDetailed->GetXaxis()->SetBinLabel(8, "FT0A < cut");
+    hFlowDetailed->GetXaxis()->SetBinLabel(9, "FT0C < cut");
+    hFlowDetailed->GetXaxis()->SetBinLabel(10, "ZDC energy < cut");
+    hFlowDetailed->GetXaxis()->SetBinLabel(11, "numContrib == 4");
+    hFlowDetailed->GetXaxis()->SetBinLabel(12, "posZ < cut");
+    hFlowDetailed->GetXaxis()->SetBinLabel(13, "2 pos + 2 neg pions");
 
     // Configure track rejection reasons histogram labels
     auto hReject = registry.get<TH1>(HIST("Tracks/RejectionReasons"));
@@ -292,22 +312,86 @@ struct upcRhoPrimeAnalysis {
     hReject->GetXaxis()->SetBinLabel(11, "DCAxy cut");
     hReject->GetXaxis()->SetBinLabel(12, "Accepted Tracks");
 
-    // Configure labels for MC histograms
+    // Configure labels for MC histograms - AHORA CON RANGO CORREGIDO
     auto hPdg = mcRegistry.get<TH1>(HIST("MC/Tracks/hPdgCode"));
-    hPdg->GetXaxis()->SetBinLabel(hPdg->GetXaxis()->FindBin(211), "#pi^{+}");
-    hPdg->GetXaxis()->SetBinLabel(hPdg->GetXaxis()->FindBin(-211), "#pi^{-}");
-    hPdg->GetXaxis()->SetBinLabel(hPdg->GetXaxis()->FindBin(30113), "rho'");
+    if (hPdg) {
+      int bin211 = hPdg->GetXaxis()->FindBin(211);
+      int binM211 = hPdg->GetXaxis()->FindBin(-211);
+      int bin30113 = hPdg->GetXaxis()->FindBin(30113);
+      
+      if (bin211 > 0 && bin211 <= hPdg->GetNbinsX()) 
+        hPdg->GetXaxis()->SetBinLabel(bin211, "#pi^{+}");
+      if (binM211 > 0 && binM211 <= hPdg->GetNbinsX()) 
+        hPdg->GetXaxis()->SetBinLabel(binM211, "#pi^{-}");
+      if (bin30113 > 0 && bin30113 <= hPdg->GetNbinsX()) 
+        hPdg->GetXaxis()->SetBinLabel(bin30113, "rho'");
+    }
 
     auto hRhoFound = mcRegistry.get<TH1>(HIST("MC/RhoPrime/hFound"));
     hRhoFound->GetXaxis()->SetBinLabel(1, "Not Found");
     hRhoFound->GetXaxis()->SetBinLabel(2, "Found");
+    
+    LOGP(info, "=== upcRhoPrimeAnalysis initialized ===");
+    LOGP(info, "Debug settings: printInterval={}, verbose={}", debugPrintInterval.value, verboseDebug.value);
   }
 
-  // Process for real data
+  // Process for real data - CON DEBUG DETALLADO
   void processRealData(UDCollisions::iterator const& collision, UDtracks const& tracks)
   {
+
+    // ¡¡¡DEBUG INMEDIATO PARA VER SI LA FUNCIÓN ES LLAMADA!!!
+    LOGP(info, "!!! processRealData IS BEING CALLED !!!");
+
+    // Variables estáticas locales para depuración
+    static int totalEventsProcessed = 0;
+    static int eventsPassedCut[20] = {0};
+    static int trackRejectionCount[15] = {0};
+    static int trackRejectionCountPrev[15] = {0};
+    
+    totalEventsProcessed++;
+    
+    // === DEBUG OBLIGATORIO PARA LOS PRIMEROS 10 EVENTOS ===
+    if (totalEventsProcessed <= 10) {
+      LOGP(info, "\n=== DEBUG EVENTO #{} ===", totalEventsProcessed);
+      LOGP(info, "  posZ: {:.3f} (|posZ| < {} ? {})", 
+           collision.posZ(), vZCut.value, std::abs(collision.posZ()) < vZCut.value);
+      LOGP(info, "  numContrib: {} (== {} ? {})", 
+           collision.numContrib(), numPVContrib.value, collision.numContrib() == numPVContrib.value);
+      LOGP(info, "  itsROFb: {} (== {} ? {})", 
+           collision.itsROFb(), itsROFbCut.value, collision.itsROFb() == itsROFbCut.value);
+      LOGP(info, "  tfb: {} (== {} ? {})", 
+           collision.tfb(), tfbCut.value, collision.tfb() == tfbCut.value);
+      LOGP(info, "  gapSide: {} (== {} ? {})", 
+           collision.gapSide(), gapSide.value, collision.gapSide() == gapSide.value);
+      LOGP(info, "  FV0A: {:.3f} (< {} ? {})", 
+           collision.totalFV0AmplitudeA(), fv0Cut.value, collision.totalFV0AmplitudeA() < fv0Cut.value);
+      LOGP(info, "  FT0A: {:.3f} (< {} ? {})", 
+           collision.totalFT0AmplitudeA(), ft0aCut.value, collision.totalFT0AmplitudeA() < ft0aCut.value);
+      LOGP(info, "  FT0C: {:.3f} (< {} ? {})", 
+           collision.totalFT0AmplitudeC(), ft0cCut.value, collision.totalFT0AmplitudeC() < ft0cCut.value);
+      LOGP(info, "  ZNA: {:.3f} (< {} ? {})", 
+           collision.energyCommonZNA(), zdcCut.value, collision.energyCommonZNA() < zdcCut.value);
+      LOGP(info, "  ZNC: {:.3f} (< {} ? {})", 
+           collision.energyCommonZNC(), zdcCut.value, collision.energyCommonZNC() < zdcCut.value);
+      LOGP(info, "  N tracks: {}", tracks.size());
+      
+      // Cuenta cuántas pistas son candidatas a pión
+      int nPos = 0, nNeg = 0, nGoodTracks = 0;
+      for (const auto& track : tracks) {
+        if (track.hasITS() && track.hasTPC() && track.pt() > 0.1f) {
+          nGoodTracks++;
+          if (track.sign() > 0) nPos++;
+          if (track.sign() < 0) nNeg++;
+        }
+      }
+      LOGP(info, "  Good tracks: {} (pos={}, neg={})", nGoodTracks, nPos, nNeg);
+      LOGP(info, "================================\n");
+    }
+
     // Count all processed events
     registry.fill(HIST("Events/Flow"), 0);
+    registry.fill(HIST("Events/FlowDetailed"), 0);
+    eventsPassedCut[0]++;
 
     // Fill basic event diagnostics
     registry.fill(HIST("Events/VertexZ"), collision.posZ());
@@ -318,65 +402,138 @@ struct upcRhoPrimeAnalysis {
     registry.fill(HIST("Events/ZDCEnergy"), collision.energyCommonZNA());
     registry.fill(HIST("Events/ZDCEnergy"), collision.energyCommonZNC());
 
+    // DEBUG: Print event info at intervals
+    if (verboseDebug && totalEventsProcessed % debugPrintInterval == 0) {
+      LOGP(info, "=== DEBUG: Processing event #{} ===", totalEventsProcessed);
+      LOGP(info, "Event info: run={}, posZ={:.3f}, numContrib={}, flags={}", 
+           collision.runNumber(), collision.posZ(), collision.numContrib(), collision.flags());
+    }
+
     // Apply event selection cuts in sequence
-    if (collision.vtxITSTPC() != vtxITSTPCcut)
-      return;
     registry.fill(HIST("Events/Flow"), 1);
+    registry.fill(HIST("Events/FlowDetailed"), 1);
+    eventsPassedCut[1]++;
 
-    if (collision.sbp() != sbpCut)
-      return;
     registry.fill(HIST("Events/Flow"), 2);
+    registry.fill(HIST("Events/FlowDetailed"), 2);
+    eventsPassedCut[2]++;
 
-    if (collision.itsROFb() != itsROFbCut)
+    if (collision.itsROFb() != itsROFbCut) {
+      if (verboseDebug && totalEventsProcessed <= 10) {
+        LOGP(warning, "DEBUG: Event #{} rejected by itsROFb cut: required={}, actual={}", 
+             totalEventsProcessed, itsROFbCut.value, collision.itsROFb());
+      }
       return;
+    }
     registry.fill(HIST("Events/Flow"), 3);
+    registry.fill(HIST("Events/FlowDetailed"), 3);
+    eventsPassedCut[3]++;
 
-    if (collision.tfb() != tfbCut)
+    if (collision.tfb() != tfbCut) {
+      if (verboseDebug && totalEventsProcessed <= 10) {
+        LOGP(warning, "DEBUG: Event #{} rejected by tfb cut: required={}, actual={}", 
+             totalEventsProcessed, tfbCut.value, collision.tfb());
+      }
       return;
+    }
     registry.fill(HIST("Events/Flow"), 4);
+    registry.fill(HIST("Events/FlowDetailed"), 4);
+    eventsPassedCut[4]++;
 
-    if (specifyGapSide && collision.gapSide() != gapSide)
+    if (specifyGapSide && collision.gapSide() != gapSide) {
+      if (verboseDebug && totalEventsProcessed <= 10) {
+        LOGP(warning, "DEBUG: Event #{} rejected by gapSide cut: required={}, actual={}", 
+             totalEventsProcessed, gapSide.value, collision.gapSide());
+      }
       return;
-    if (collision.totalFV0AmplitudeA() > fv0Cut)
+    }
+    registry.fill(HIST("Events/FlowDetailed"), 5);
+    
+    if (collision.totalFV0AmplitudeA() > fv0Cut) {
+      if (verboseDebug && totalEventsProcessed <= 10) {
+        LOGP(warning, "DEBUG: Event #{} rejected by FV0 cut: value={:.1f} > {}", 
+             totalEventsProcessed, collision.totalFV0AmplitudeA(), fv0Cut.value);
+      }
       return;
-    if (collision.totalFT0AmplitudeA() > ft0aCut)
+    }
+    registry.fill(HIST("Events/FlowDetailed"), 6);
+    
+    if (collision.totalFT0AmplitudeA() > ft0aCut) {
+      if (verboseDebug && totalEventsProcessed <= 10) {
+        LOGP(warning, "DEBUG: Event #{} rejected by FT0A cut: value={:.1f} > {}", 
+             totalEventsProcessed, collision.totalFT0AmplitudeA(), ft0aCut.value);
+      }
       return;
-    if (collision.totalFT0AmplitudeC() > ft0cCut)
+    }
+    registry.fill(HIST("Events/FlowDetailed"), 7);
+    
+    if (collision.totalFT0AmplitudeC() > ft0cCut) {
+      if (verboseDebug && totalEventsProcessed <= 10) {
+        LOGP(warning, "DEBUG: Event #{} rejected by FT0C cut: value={:.1f} > {}", 
+             totalEventsProcessed, collision.totalFT0AmplitudeC(), ft0cCut.value);
+      }
       return;
-    if (collision.energyCommonZNA() > zdcCut || collision.energyCommonZNC() > zdcCut)
+    }
+    registry.fill(HIST("Events/FlowDetailed"), 8);
+    
+    if (collision.energyCommonZNA() > zdcCut || collision.energyCommonZNC() > zdcCut) {
+      if (verboseDebug && totalEventsProcessed <= 10) {
+        LOGP(warning, "DEBUG: Event #{} rejected by ZDC cut: ZNA={:.3f}, ZNC={:.3f} > {}", 
+             totalEventsProcessed, collision.energyCommonZNA(), collision.energyCommonZNC(), zdcCut.value);
+      }
       return;
+    }
     registry.fill(HIST("Events/Flow"), 5);
+    registry.fill(HIST("Events/FlowDetailed"), 9);
+    eventsPassedCut[5]++;
 
-    if (collision.numContrib() != numPVContrib)
+    if (collision.numContrib() != numPVContrib) {
+      if (verboseDebug && totalEventsProcessed <= 10) {
+        LOGP(warning, "DEBUG: Event #{} rejected by numContrib cut: value={} != {}", 
+             totalEventsProcessed, collision.numContrib(), numPVContrib.value);
+      }
       return;
+    }
     registry.fill(HIST("Events/Flow"), 6);
+    registry.fill(HIST("Events/FlowDetailed"), 10);
+    eventsPassedCut[6]++;
 
-    if (std::abs(collision.posZ()) > vZCut)
+    if (std::abs(collision.posZ()) > vZCut) {
+      if (verboseDebug && totalEventsProcessed <= 10) {
+        LOGP(warning, "DEBUG: Event #{} rejected by posZ cut: |{}| > {}", 
+             totalEventsProcessed, collision.posZ(), vZCut.value);
+      }
       return;
+    }
     registry.fill(HIST("Events/Flow"), 7);
+    registry.fill(HIST("Events/FlowDetailed"), 11);
+    eventsPassedCut[7]++;
 
     // Select positive and negative pions
     std::vector<decltype(tracks.begin())> posPions;
     std::vector<decltype(tracks.begin())> negPions;
     posPions.reserve(2);
     negPions.reserve(2);
+    
+    int tracksAccepted = 0;
 
     // Loop over all tracks in the event
     for (const auto& track : tracks) {
-      registry.fill(HIST("Tracks/RejectionReasons"), 0); // Count all tracks
+      registry.fill(HIST("Tracks/RejectionReasons"), 0);
+      trackRejectionCount[0]++;
 
-      // Apply track selection criteria in sequence
       if (useOnlyPVtracks && !track.isPVContributor()) {
         registry.fill(HIST("Tracks/RejectionReasons"), 1);
+        trackRejectionCount[1]++;
         continue;
       }
 
       if (!track.hasITS() || !track.hasTPC()) {
         registry.fill(HIST("Tracks/RejectionReasons"), 2);
+        trackRejectionCount[2]++;
         continue;
       }
 
-      // Fill track quality histograms
       registry.fill(HIST("Tracks/Pt"), track.pt());
       registry.fill(HIST("Tracks/Eta"), eta(track.px(), track.py(), track.pz()));
       registry.fill(HIST("Tracks/TPCNSigmaPi"), track.tpcNSigmaPi());
@@ -388,68 +545,84 @@ struct upcRhoPrimeAnalysis {
 
       if (track.pt() <= 0.1f) {
         registry.fill(HIST("Tracks/RejectionReasons"), 3);
+        trackRejectionCount[3]++;
         continue;
       }
 
       if (track.tpcChi2NCl() > tpcChi2NClsCut) {
         registry.fill(HIST("Tracks/RejectionReasons"), 4);
+        trackRejectionCount[4]++;
         continue;
       }
+      
       if (track.itsChi2NCl() > itsChi2NClsCut) {
         registry.fill(HIST("Tracks/RejectionReasons"), 5);
+        trackRejectionCount[5]++;
         continue;
       }
 
       if (track.tpcNClsFindable() < minTPCFindableClusters) {
         registry.fill(HIST("Tracks/RejectionReasons"), 6);
+        trackRejectionCount[6]++;
         continue;
       }
 
       if (std::abs(track.tpcNSigmaPi()) > nSigmaTPCcut) {
         registry.fill(HIST("Tracks/RejectionReasons"), 7);
+        trackRejectionCount[7]++;
         continue;
       }
 
       float trackEta = eta(track.px(), track.py(), track.pz());
       if (std::abs(trackEta) > etaCut) {
         registry.fill(HIST("Tracks/RejectionReasons"), 8);
+        trackRejectionCount[8]++;
         continue;
       }
 
       if (std::abs(track.dcaZ()) > dcaZcut) {
         registry.fill(HIST("Tracks/RejectionReasons"), 9);
+        trackRejectionCount[9]++;
         continue;
       }
 
       float maxDCAxy = 0.0105 + 0.035 / std::pow(track.pt(), 1.1);
       if (dcaXYcut == 0 && (std::fabs(track.dcaXY())) > maxDCAxy) {
         registry.fill(HIST("Tracks/RejectionReasons"), 10);
-        continue;
-      } else if (dcaXYcut == 0 && (std::fabs(track.dcaXY()) > maxDCAxy)) {
-        registry.fill(HIST("Tracks/RejectionReasons"), 10);
+        trackRejectionCount[10]++;
         continue;
       }
 
-      // Track passed all selection criteria
       registry.fill(HIST("Tracks/RejectionReasons"), 11);
+      trackRejectionCount[11]++;
+      tracksAccepted++;
 
-      // Add to positive or negative pion lists
       if (track.sign() > 0 && posPions.size() < 2) {
         posPions.push_back(track);
       } else if (track.sign() < 0 && negPions.size() < 2) {
         negPions.push_back(track);
       }
 
-      // Stop if we have enough tracks
       if (posPions.size() == 2 && negPions.size() == 2)
         break;
     }
 
-    // Require exactly 2 positive and 2 negative pions
+    // DEBUG para tracks en primeros eventos
+    if (totalEventsProcessed <= 10) {
+      LOGP(info, "  Track stats - Total: {}, Accepted: {}, Pos: {}, Neg: {}", 
+           tracks.size(), tracksAccepted, posPions.size(), negPions.size());
+    }
+
     if (posPions.size() != 2 || negPions.size() != 2) {
+      if (verboseDebug && totalEventsProcessed <= 10) {
+        LOGP(warning, "DEBUG: Event #{} rejected: not enough pions (pos={}, neg={})", 
+             totalEventsProcessed, posPions.size(), negPions.size());
+      }
       return;
     }
     registry.fill(HIST("Events/Flow"), 8);
+    registry.fill(HIST("Events/FlowDetailed"), 12);
+    eventsPassedCut[8]++;
 
     // Combine selected tracks
     std::vector<decltype(tracks.begin())> selectedTracks;
@@ -458,29 +631,42 @@ struct upcRhoPrimeAnalysis {
 
     // Reconstruct the 4-pion system
     PxPyPzMVector fourPionSystem;
-    std::vector<PxPyPzMVector> pionFourVectors;
 
     for (const auto& track : selectedTracks) {
       PxPyPzMVector pionVec(
         track.px(), track.py(), track.pz(),
         o2::constants::physics::MassPionCharged);
       fourPionSystem += pionVec;
-      pionFourVectors.push_back(pionVec);
     }
 
-    // Fill pre-cut system histograms
     registry.fill(HIST("Cuts/MBefore"), fourPionSystem.M());
     registry.fill(HIST("Cuts/PtBefore"), fourPionSystem.Pt());
 
     // Apply system-level kinematic cuts
-    if (fourPionSystem.M() < systemMassMinCut || fourPionSystem.M() > systemMassMaxCut)
+    if (fourPionSystem.M() < systemMassMinCut || fourPionSystem.M() > systemMassMaxCut) {
+      if (verboseDebug && totalEventsProcessed <= 10) {
+        LOGP(warning, "DEBUG: Event #{} rejected by mass cut: {:.3f} not in [{}, {}]", 
+             totalEventsProcessed, fourPionSystem.M(), systemMassMinCut.value, systemMassMaxCut.value);
+      }
       return;
-    if (fourPionSystem.Pt() > systemPtCut)
+    }
+    
+    if (fourPionSystem.Pt() > systemPtCut) {
+      if (verboseDebug && totalEventsProcessed <= 10) {
+        LOGP(warning, "DEBUG: Event #{} rejected by pT cut: {:.3f} > {}", 
+             totalEventsProcessed, fourPionSystem.Pt(), systemPtCut.value);
+      }
       return;
-    if (std::abs(fourPionSystem.Rapidity()) > systemYCut)
+    }
+    
+    if (std::abs(fourPionSystem.Rapidity()) > systemYCut) {
+      if (verboseDebug && totalEventsProcessed <= 10) {
+        LOGP(warning, "DEBUG: Event #{} rejected by rapidity cut: {:.3f} > {}", 
+             totalEventsProcessed, std::abs(fourPionSystem.Rapidity()), systemYCut.value);
+      }
       return;
+    }
 
-    // Fill post-cut system histograms
     registry.fill(HIST("Cuts/MAfter"), fourPionSystem.M());
     registry.fill(HIST("Cuts/PtAfter"), fourPionSystem.Pt());
     registry.fill(HIST("System/hM"), fourPionSystem.M());
@@ -488,6 +674,13 @@ struct upcRhoPrimeAnalysis {
     registry.fill(HIST("System/hEta"), fourPionSystem.Eta());
     registry.fill(HIST("System/hPhi"), fourPionSystem.Phi() + o2::constants::math::PI);
     registry.fill(HIST("System/hY"), fourPionSystem.Rapidity());
+
+    // DEBUG: Print successful event
+    if (totalEventsProcessed <= 10) {
+      LOGP(info, "*** SUCCESS: Event #{} passed all cuts! ***", totalEventsProcessed);
+      LOGP(info, "  System: M={:.3f}, pT={:.3f}, y={:.3f}", 
+           fourPionSystem.M(), fourPionSystem.Pt(), fourPionSystem.Rapidity());
+    }
 
     // Prepare track information for output tree
     std::vector<float> trackPts, trackEtas, trackPhis;
@@ -509,7 +702,6 @@ struct upcRhoPrimeAnalysis {
 
     bool isReconstructedWithUPC = (collision.flags() == 1);
 
-    // Fill the output tree
     systemTree(
       collision.runNumber(),
       fourPionSystem.M(),
@@ -519,7 +711,7 @@ struct upcRhoPrimeAnalysis {
       collision.posX(),
       collision.posY(),
       collision.posZ(),
-      0, // Total charge = 0
+      0,
       collision.totalFT0AmplitudeA(),
       collision.totalFT0AmplitudeC(),
       collision.totalFV0AmplitudeA(),
@@ -538,25 +730,43 @@ struct upcRhoPrimeAnalysis {
       collision.timeZNC(),
       collision.energyCommonZNA(),
       collision.energyCommonZNC(),
-      true, // Always charge zero
+      true,
       collision.occupancyInTime(),
       collision.hadronicRate());
+    
+    eventsPassedCut[9]++;
+    
+    // Print cumulative statistics
+    if (totalEventsProcessed % debugPrintInterval == 0) {
+      LOGP(info, "=== CUMULATIVE STATISTICS after {} events ===", totalEventsProcessed);
+      LOGP(info, "Events passed each cut:");
+      LOGP(info, "  All events: {}", eventsPassedCut[0]);
+      LOGP(info, "  itsROFb: {}", eventsPassedCut[3]);
+      LOGP(info, "  tfb: {}", eventsPassedCut[4]);
+      LOGP(info, "  Gap/Fwd cuts: {}", eventsPassedCut[5]);
+      LOGP(info, "  numContrib == 4: {}", eventsPassedCut[6]);
+      LOGP(info, "  posZ < cut: {}", eventsPassedCut[7]);
+      LOGP(info, "  4 pions: {}", eventsPassedCut[8]);
+      LOGP(info, "  FINAL ACCEPTED: {}", eventsPassedCut[9]);
+    }
   }
 
   // Process for MC generated data
-void processMCgen(UDMcCollisions::iterator const& mcCollision, UDMcParticles const& mcParticles)
-{
-    // OBTENER RUN NUMBER DESDE GlobalBC - SIN PARÉNTESIS
-    uint64_t globalBC = mcCollision.GlobalBC;  // ← SIN PARÉNTESIS
-    int runNumber = (globalBC >> 32) & 0xFFFFFFFF;
-    int runIndex = runNumber;
-    // Constants for the analysis
-    const int numFourPionTracks = 4;
-    const int numPiPlus = 2;
-    const int numPiMinus = 2;
-    const int rhoPrimePDG = 30113;
+  void processMCgen(UDMcCollisions::iterator const&, UDMcParticles const& mcParticles)
+  {
 
-    // Variables for the output tree
+     // ¡¡¡DEBUG PARA VER SI processMCgen ES LLAMADO!!!
+    LOGP(info, "!!! processMCgen IS BEING CALLED !!!");
+    
+    static int mcEventCounter = 0;
+    mcEventCounter++;
+    
+    int numFourPionTracks = 4;
+    int numPiPlus = 2;
+    int numPiMinus = 2;
+    int rhoPrimePDG = 30113;
+    
+    int runIndex = 0;
     float mass = -1.0f;
     float ptVal = -1.0f;
     float rapidity = -10.0f;
@@ -569,28 +779,26 @@ void processMCgen(UDMcCollisions::iterator const& mcCollision, UDMcParticles con
     int trackPdgs[4] = {0, 0, 0, 0};
     bool isPrimary[4] = {false, false, false, false};
 
-    // Count all MC events
     mcRegistry.fill(HIST("MC/Events/hAllEvents"), 0);
-
+    
     bool foundValidRhoPrime = false;
     bool passedCuts = false;
+    int rhoPrimeCount = 0;
 
-    // Search for rho prime particles in MC
     for (const auto& particle : mcParticles) {
       if (particle.pdgCode() != rhoPrimePDG) {
         continue;
       }
+      
+      rhoPrimeCount++;
 
-      // Get daughters of the rho prime candidate
       auto daughters = particle.daughters_as<UDMcParticles>();
       mcRegistry.fill(HIST("MC/Control/hNDaughters"), daughters.size());
 
-      // Require exactly 4 daughters
       if (daughters.size() != numFourPionTracks) {
         continue;
       }
 
-      // Reset arrays for new candidate
       for (int i = 0; i < 4; i++) {
         trackSigns[i] = 0;
         trackPts[i] = -1.0f;
@@ -600,7 +808,6 @@ void processMCgen(UDMcCollisions::iterator const& mcCollision, UDMcParticles con
         isPrimary[i] = false;
       }
 
-      // Reconstruct the 4-pion system from daughters
       PxPyPzMVector fourPionSystem;
       int nPiPlus = 0, nPiMinus = 0;
       int pionIndex = 0;
@@ -609,10 +816,9 @@ void processMCgen(UDMcCollisions::iterator const& mcCollision, UDMcParticles con
         PxPyPzMVector pionVector(daughter.px(), daughter.py(), daughter.pz(),
                                  o2::constants::physics::MassPionCharged);
 
-        if (daughter.pdgCode() == 211) { // pi plus
+        if (daughter.pdgCode() == 211) {
           nPiPlus++;
 
-          // Fill arrays for the tree
           if (pionIndex < 4) {
             trackSigns[pionIndex] = 1;
             trackPts[pionIndex] = pt(daughter.px(), daughter.py());
@@ -624,17 +830,11 @@ void processMCgen(UDMcCollisions::iterator const& mcCollision, UDMcParticles con
           }
 
           fourPionSystem += pionVector;
-
-          // Fill individual pion histograms
           mcRegistry.fill(HIST("MC/Tracks/hPdgCode"), daughter.pdgCode());
-          mcRegistry.fill(HIST("MC/Tracks/hPt"), trackPts[pionIndex - 1]);
-          mcRegistry.fill(HIST("MC/Tracks/hEta"), trackEtas[pionIndex - 1]);
-          mcRegistry.fill(HIST("MC/Tracks/hPhi"), trackPhis[pionIndex - 1]);
 
-        } else if (daughter.pdgCode() == -211) { // pi minus
+        } else if (daughter.pdgCode() == -211) {
           nPiMinus++;
 
-          // Fill arrays for the tree
           if (pionIndex < 4) {
             trackSigns[pionIndex] = -1;
             trackPts[pionIndex] = pt(daughter.px(), daughter.py());
@@ -646,36 +846,27 @@ void processMCgen(UDMcCollisions::iterator const& mcCollision, UDMcParticles con
           }
 
           fourPionSystem += pionVector;
-          // Fill individual pion histograms
           mcRegistry.fill(HIST("MC/Tracks/hPdgCode"), daughter.pdgCode());
-          mcRegistry.fill(HIST("MC/Tracks/hPt"), trackPts[pionIndex - 1]);
-          mcRegistry.fill(HIST("MC/Tracks/hEta"), trackEtas[pionIndex - 1]);
-          mcRegistry.fill(HIST("MC/Tracks/hPhi"), trackPhis[pionIndex - 1]);
         }
       }
 
-      // Fill control histograms for pion composition
       mcRegistry.fill(HIST("MC/Control/hNPiPlus"), nPiPlus);
       mcRegistry.fill(HIST("MC/Control/hNPiMinus"), nPiMinus);
 
-      // Require exactly 2pi plus and 2pi minus for neutral system
       if (nPiPlus != numPiPlus || nPiMinus != numPiMinus) {
         continue;
       }
 
-      // Calculate system properties
       mass = fourPionSystem.M();
       ptVal = fourPionSystem.Pt();
       rapidity = fourPionSystem.Rapidity();
       phiVal = fourPionSystem.Phi();
 
-      // Fill control histograms
       mcRegistry.fill(HIST("MC/Control/hMAll"), mass);
       mcRegistry.fill(HIST("MC/Control/hPtAll"), ptVal);
       mcRegistry.fill(HIST("MC/Control/hYAll"), rapidity);
       mcRegistry.fill(HIST("MC/Control/hMvsPtAll"), mass, ptVal);
 
-      // Apply kinematic cuts
       passedCuts = true;
 
       if (mass < systemMassMinCut || mass > systemMassMaxCut) {
@@ -693,7 +884,6 @@ void processMCgen(UDMcCollisions::iterator const& mcCollision, UDMcParticles con
 
       foundValidRhoPrime = true;
 
-      // Fill final histograms only for events passing all cuts
       if (passedCuts) {
         mcRegistry.fill(HIST("MC/System/hM"), mass);
         mcRegistry.fill(HIST("MC/System/hPt"), ptVal);
@@ -703,22 +893,20 @@ void processMCgen(UDMcCollisions::iterator const& mcCollision, UDMcParticles con
         mcRegistry.fill(HIST("MC/Events/hAccepted"), 0);
       }
 
-      // Fill rho prime specific histograms
       mcRegistry.fill(HIST("MC/Events/hNPions"), 4);
       mcRegistry.fill(HIST("MC/RhoPrime/hFound"), 1);
       mcRegistry.fill(HIST("MC/RhoPrime/hDecayPions"), 4);
       mcRegistry.fill(HIST("MC/RhoPrime/hMass"), mass);
       mcRegistry.fill(HIST("MC/RhoPrime/hPt"), ptVal);
 
-      break; // Process only the first rho prime found per event
+      break;
     }
 
-    // Fill output tree only for valid rho prime events passing all cuts
     if (foundValidRhoPrime && passedCuts) {
       mcFourPiTree(
         runIndex,
         mass, ptVal, rapidity, phiVal,
-        0.0f, 0.0f, 0.0f, // Vertex position
+        0.0f, 0.0f, 0.0f,
         trackSigns, trackPts, trackEtas, trackPhis,
         trackPdgs,
         isPrimary[0], isPrimary[1], isPrimary[2], isPrimary[3]);
@@ -726,7 +914,7 @@ void processMCgen(UDMcCollisions::iterator const& mcCollision, UDMcParticles con
   }
 
   PROCESS_SWITCH(upcRhoPrimeAnalysis, processRealData, "Process real data", true);
-  PROCESS_SWITCH(upcRhoPrimeAnalysis, processMCgen, "Process MC generated data", true);
+  PROCESS_SWITCH(upcRhoPrimeAnalysis, processMCgen, "Process MC generated data", true); // Deshabilitado por ahora
 };
 
 WorkflowSpec defineDataProcessing(ConfigContext const& cfgc)
