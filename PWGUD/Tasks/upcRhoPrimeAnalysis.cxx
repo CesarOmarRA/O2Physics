@@ -1,4 +1,3 @@
-// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
 // See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
 // All rights not expressly granted are reserved.
 //
@@ -112,6 +111,7 @@ DECLARE_SOA_COLUMN(MCIsPhysicalPrimary0, mcIsPhysicalPrimary0, bool);
 DECLARE_SOA_COLUMN(MCIsPhysicalPrimary1, mcIsPhysicalPrimary1, bool);
 DECLARE_SOA_COLUMN(MCIsPhysicalPrimary2, mcIsPhysicalPrimary2, bool);
 DECLARE_SOA_COLUMN(MCIsPhysicalPrimary3, mcIsPhysicalPrimary3, bool);
+//DECLARE_SOA_COLUMN(MCIsReconstructedWithUPC, mcisReconstructedWithUPC, bool); // UPC mode reconstruction flag
 } // namespace mcfourpi
 
 // Table for MC
@@ -230,6 +230,8 @@ struct upcRhoPrimeAnalysis {
      // Rho prime specific histograms
      {"MC/RhoPrime/hFound", "Rho Prime Found;Found;Counts", {HistType::kTH1F, {{2, -0.5, 1.5}}}},
      {"MC/RhoPrime/hMass", "Rho Prime Mass;m (GeV/c^{2});Counts", {HistType::kTH1F, {{1000, 0.0, 10.0}}}},
+     {"MC/RhoPrime/hMassUPC", "Rho Prime Mass UPC;m (GeV/c^{2});Counts", {HistType::kTH1F, {{1000, 0.0, 10.0}}}},
+     {"MC/RhoPrime/hMassSTD", "Rho Prime Mass STD;m (GeV/c^{2});Counts", {HistType::kTH1F, {{1000, 0.0, 10.0}}}},
      {"MC/RhoPrime/hPt", "Rho Prime p_{T};p_{T} (GeV/c);Counts", {HistType::kTH1F, {{1000, 0.0, 10.0}}}},
      {"MC/RhoPrime/hDecayPions", "Rho Prime Decay Pions;N_{#pi};Counts", {HistType::kTH1F, {{5, -0.5, 4.5}}}},
 
@@ -346,7 +348,7 @@ struct upcRhoPrimeAnalysis {
     static int totalEventsProcessed = 0;
     static int eventsPassedCut[20] = {0};
     static int trackRejectionCount[15] = {0};
-    static int trackRejectionCountPrev[15] = {0};
+    //static int trackRejectionCountPrev[15] = {0};
     
     totalEventsProcessed++;
     
@@ -897,6 +899,15 @@ struct upcRhoPrimeAnalysis {
       mcRegistry.fill(HIST("MC/RhoPrime/hFound"), 1);
       mcRegistry.fill(HIST("MC/RhoPrime/hDecayPions"), 4);
       mcRegistry.fill(HIST("MC/RhoPrime/hMass"), mass);
+
+      // === NUEVO IF PARA GUARDAR HISTOGRAMAS SEGÚN MODO DE RECONSTRUCCIÓN ===
+      if (particle.flags() == 1) {
+        mcRegistry.fill(HIST("MC/RhoPrime/hMassUPC"), mass);
+      } else {
+        mcRegistry.fill(HIST("MC/RhoPrime/hMassSTD"), mass);
+      }
+      // ====================================================================
+
       mcRegistry.fill(HIST("MC/RhoPrime/hPt"), ptVal);
 
       break;

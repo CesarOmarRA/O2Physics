@@ -48,6 +48,7 @@
 #include <map>
 #include <memory>
 #include <numeric>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -57,11 +58,14 @@ using namespace o2::framework::expressions;
 
 using BCsTSsSels = soa::Join<aod::BCsWithTimestamps, aod::BcSels, aod::Run3MatchedToBCSparse>;
 using ColSels = soa::Join<aod::Collisions, aod::EvSels>;
+using ColSelsMc = soa::Join<aod::Collisions, aod::EvSels, aod::McCollisionLabels>;
 using TRKs = soa::Join<aod::Tracks, aod::TracksExtra, aod::TracksDCA, aod::TrackSelection,
                        aod::pidTPCFullEl, aod::pidTPCFullMu, aod::pidTPCFullPi, aod::pidTPCFullKa, aod::pidTPCFullPr,
                        aod::pidTPCFullDe, aod::pidTPCFullTr, aod::pidTPCFullHe, aod::pidTPCFullAl>;
+using TRKsMc = soa::Join<TRKs, aod::McTrackLabels>;
 
 using ColSel = ColSels::iterator;
+using ColSelMc = ColSelsMc::iterator;
 
 namespace o2::aod
 {
@@ -140,6 +144,46 @@ DECLARE_SOA_COLUMN(HasTof3, hasTof3, int);
 DECLARE_SOA_COLUMN(HasTof4, hasTof4, int);
 } // namespace datarows
 
+namespace mcgen
+{
+DECLARE_SOA_COLUMN(McMotherPdg, mcMotherPdg, int);
+DECLARE_SOA_COLUMN(McMotherPt, mcMotherPt, float);
+DECLARE_SOA_COLUMN(McMotherPhi, mcMotherPhi, float);
+DECLARE_SOA_COLUMN(McMotherMass, mcMotherMass, float);
+DECLARE_SOA_COLUMN(McMotherRapidity, mcMotherRapidity, float);
+
+DECLARE_SOA_COLUMN(McPdg1, mcPdg1, int);
+DECLARE_SOA_COLUMN(McPt1, mcPt1, float);
+DECLARE_SOA_COLUMN(McEta1, mcEta1, float);
+DECLARE_SOA_COLUMN(McPhi1, mcPhi1, float);
+DECLARE_SOA_COLUMN(McQ1, mcQ1, int);
+DECLARE_SOA_COLUMN(IsPrimary1, isPrimary1, int);
+DECLARE_SOA_COLUMN(McPdg2, mcPdg2, int);
+DECLARE_SOA_COLUMN(McPt2, mcPt2, float);
+DECLARE_SOA_COLUMN(McEta2, mcEta2, float);
+DECLARE_SOA_COLUMN(McPhi2, mcPhi2, float);
+DECLARE_SOA_COLUMN(McQ2, mcQ2, int);
+DECLARE_SOA_COLUMN(IsPrimary2, isPrimary2, int);
+DECLARE_SOA_COLUMN(McPdg3, mcPdg3, int);
+DECLARE_SOA_COLUMN(McPt3, mcPt3, float);
+DECLARE_SOA_COLUMN(McEta3, mcEta3, float);
+DECLARE_SOA_COLUMN(McPhi3, mcPhi3, float);
+DECLARE_SOA_COLUMN(McQ3, mcQ3, int);
+DECLARE_SOA_COLUMN(IsPrimary3, isPrimary3, int);
+DECLARE_SOA_COLUMN(McPdg4, mcPdg4, int);
+DECLARE_SOA_COLUMN(McPt4, mcPt4, float);
+DECLARE_SOA_COLUMN(McEta4, mcEta4, float);
+DECLARE_SOA_COLUMN(McPhi4, mcPhi4, float);
+DECLARE_SOA_COLUMN(McQ4, mcQ4, int);
+DECLARE_SOA_COLUMN(IsPrimary4, isPrimary4, int);
+
+DECLARE_SOA_COLUMN(McPosX, mcPosX, float);
+DECLARE_SOA_COLUMN(McPosY, mcPosY, float);
+DECLARE_SOA_COLUMN(McPosZ, mcPosZ, float);
+DECLARE_SOA_COLUMN(McLocalBC, mcLocalBC, int);
+DECLARE_SOA_COLUMN(RecoIndex, recoIndex, int);
+} // namespace mcgen
+
 DECLARE_SOA_TABLE(TwoTrkTable, "AOD", "TWOTRKTABLE",
                   datarows::RunNumber, datarows::PosX, datarows::PosY, datarows::PosZ, datarows::Chi2,
                   datarows::LocalBC, datarows::LocalTF, datarows::LocalROF, datarows::UpcFlag,
@@ -162,6 +206,32 @@ DECLARE_SOA_TABLE(FourTrkTable, "AOD", "FOURTRKTABLE",
                   datarows::Pt3, datarows::Eta3, datarows::Phi3, datarows::Q3, datarows::PidPion3, datarows::PidElectron3, datarows::PidKaon3, datarows::PidProton3,
                   datarows::Pt4, datarows::Eta4, datarows::Phi4, datarows::Q4, datarows::PidPion4, datarows::PidElectron4, datarows::PidKaon4, datarows::PidProton4,
                   datarows::HasTof1, datarows::HasTof2, datarows::HasTof3, datarows::HasTof4);
+
+DECLARE_SOA_TABLE(TwoTrkMCGenTable, "AOD", "TWOTRKMCGEN",
+                  mcgen::McMotherPdg, mcgen::McMotherPt, mcgen::McMotherPhi, mcgen::McMotherMass, mcgen::McMotherRapidity,
+                  mcgen::McPdg1, mcgen::McPt1, mcgen::McEta1, mcgen::McPhi1, mcgen::McQ1, mcgen::IsPrimary1,
+                  mcgen::McPdg2, mcgen::McPt2, mcgen::McEta2, mcgen::McPhi2, mcgen::McQ2, mcgen::IsPrimary2,
+                  mcgen::McPosX, mcgen::McPosY, mcgen::McPosZ, mcgen::McLocalBC, mcgen::RecoIndex);
+DECLARE_SOA_TABLE(FourTrkMCGenTable, "AOD", "FOURTRKMCGEN",
+                  mcgen::McMotherPdg, mcgen::McMotherPt, mcgen::McMotherPhi, mcgen::McMotherMass, mcgen::McMotherRapidity,
+                  mcgen::McPdg1, mcgen::McPt1, mcgen::McEta1, mcgen::McPhi1, mcgen::McQ1, mcgen::IsPrimary1,
+                  mcgen::McPdg2, mcgen::McPt2, mcgen::McEta2, mcgen::McPhi2, mcgen::McQ2, mcgen::IsPrimary2,
+                  mcgen::McPdg3, mcgen::McPt3, mcgen::McEta3, mcgen::McPhi3, mcgen::McQ3, mcgen::IsPrimary3,
+                  mcgen::McPdg4, mcgen::McPt4, mcgen::McEta4, mcgen::McPhi4, mcgen::McQ4, mcgen::IsPrimary4,
+                  mcgen::McPosX, mcgen::McPosY, mcgen::McPosZ, mcgen::McLocalBC, mcgen::RecoIndex);
+
+DECLARE_SOA_TABLE(TwoTrkMcGenAllTable, "AOD", "TWOTRKMCGALL",
+                  mcgen::McMotherPdg, mcgen::McMotherPt, mcgen::McMotherPhi, mcgen::McMotherMass, mcgen::McMotherRapidity,
+                  mcgen::McPdg1, mcgen::McPt1, mcgen::McEta1, mcgen::McPhi1, mcgen::McQ1, mcgen::IsPrimary1,
+                  mcgen::McPdg2, mcgen::McPt2, mcgen::McEta2, mcgen::McPhi2, mcgen::McQ2, mcgen::IsPrimary2,
+                  mcgen::McPosX, mcgen::McPosY, mcgen::McPosZ, mcgen::McLocalBC);
+DECLARE_SOA_TABLE(FourTrkMcGenAllTable, "AOD", "FOURTRKMCGALL",
+                  mcgen::McMotherPdg, mcgen::McMotherPt, mcgen::McMotherPhi, mcgen::McMotherMass, mcgen::McMotherRapidity,
+                  mcgen::McPdg1, mcgen::McPt1, mcgen::McEta1, mcgen::McPhi1, mcgen::McQ1, mcgen::IsPrimary1,
+                  mcgen::McPdg2, mcgen::McPt2, mcgen::McEta2, mcgen::McPhi2, mcgen::McQ2, mcgen::IsPrimary2,
+                  mcgen::McPdg3, mcgen::McPt3, mcgen::McEta3, mcgen::McPhi3, mcgen::McQ3, mcgen::IsPrimary3,
+                  mcgen::McPdg4, mcgen::McPt4, mcgen::McEta4, mcgen::McPhi4, mcgen::McQ4, mcgen::IsPrimary4,
+                  mcgen::McPosX, mcgen::McPosY, mcgen::McPosZ, mcgen::McLocalBC);
 } // namespace o2::aod
 
 struct UpcVmRof {
@@ -169,6 +239,10 @@ struct UpcVmRof {
   // output
   Produces<o2::aod::TwoTrkTable> twoTrkTable;
   Produces<o2::aod::FourTrkTable> fourTrkTable;
+  Produces<o2::aod::TwoTrkMCGenTable> twoTrkMCGenTable;
+  Produces<o2::aod::FourTrkMCGenTable> fourTrkMCGenTable;
+  Produces<o2::aod::TwoTrkMcGenAllTable> twoTrkMcGenAllTable;
+  Produces<o2::aod::FourTrkMcGenAllTable> fourTrkMcGenAllTable;
 
   // services
   Service<o2::ccdb::BasicCCDBManager> ccdb{}; // access to database
@@ -230,6 +304,7 @@ struct UpcVmRof {
   Configurable<float> minTrkTpcClusters{"minTrkTpcClusters", 70.0, "minimum number of TPC clusters associated to the track"};
   Configurable<float> maxTrkDcaZ{"maxTrkDcaZ", 2.0, "max DCA in z of track to vtx (cm)"};
   Configurable<int> tfPerBin{"tfPerBin", 10000, "timeframes per bin 1e4 means some 28 s"};
+  Configurable<int> genId{"genId", -1, "generator ID; -1 = no filter"};
 
   //--------------------------------------------------------------------------------
   // get ITS ROF info
@@ -461,6 +536,100 @@ struct UpcVmRof {
   } // end init()
 
   //--------------------------------------------------------------------------------
+  // helper functions for MC gen
+  static float mcPt(float px, float py) { return std::sqrt(px * px + py * py); }
+
+  static float mcEta(float px, float py, float pz)
+  {
+    float p = std::sqrt(px * px + py * py + pz * pz);
+    if (std::abs(p - std::abs(pz)) > 1e-10) {
+      return 0.5f * std::log((p + pz) / (p - pz));
+    }
+    return 0.0f;
+  }
+
+  static float mcPhi(float px, float py)
+  {
+    if (std::abs(px) > 1e-10 || std::abs(py) > 1e-10) {
+      return std::atan2(py, px);
+    }
+    return 0.0f;
+  }
+
+  static float mcRapidity(float px, float py, float pz, float mass)
+  {
+    float energy = std::sqrt(px * px + py * py + pz * pz + mass * mass);
+    if (std::abs(energy - std::abs(pz)) > 1e-10) {
+      return 0.5f * std::log((energy + pz) / (energy - pz));
+    }
+    return 0.0f;
+  }
+
+  // mother search
+  struct MotherInfo {
+    bool found = false;
+    int pdg = 0;
+    float px = 0, py = 0, pz = 0, mass = 0;
+  };
+
+  // checks if all given daughters share the same direct mother: found=false if not
+  template <typename T>
+  MotherInfo findCommonMother(aod::McParticles const& mcParticles, const std::vector<T>& daughters)
+  {
+    MotherInfo info;
+    if (daughters.empty() || !daughters[0].has_mothers()) {
+      return info;
+    }
+    int64_t motherIdx = daughters[0].mothersIds()[0];
+    for (size_t i = 1; i < daughters.size(); i++) {
+      if (!daughters[i].has_mothers() || daughters[i].mothersIds()[0] != motherIdx) {
+        return info;
+      }
+    }
+    auto mother = mcParticles.rawIteratorAt(motherIdx);
+    info.found = true;
+    info.pdg = mother.pdgCode();
+    info.px = mother.px();
+    info.py = mother.py();
+    info.pz = mother.pz();
+    info.mass = std::sqrt(mother.e() * mother.e() - mother.px() * mother.px() - mother.py() * mother.py() - mother.pz() * mother.pz());
+    return info;
+  }
+
+  // for processMcGenAll: same mother search.
+  template <typename IterT>
+  MotherInfo findCommonMotherFromIters(aod::McParticles const& mcParticles, const std::vector<IterT>& daughters)
+  {
+    MotherInfo info;
+    if (daughters.empty() || !daughters[0].has_mothers()) {
+      return info;
+    }
+    auto firstMothers = daughters[0].template mothers_as<aod::McParticles>();
+    if (firstMothers.begin() == firstMothers.end()) {
+      return info;
+    }
+    auto motherIt = firstMothers.begin();
+    int64_t motherGlobalIndex = motherIt->globalIndex();
+    for (size_t i = 1; i < daughters.size(); i++) {
+      if (!daughters[i].has_mothers()) {
+        return info;
+      }
+      auto iMothers = daughters[i].template mothers_as<aod::McParticles>();
+      if (iMothers.begin() == iMothers.end() || iMothers.begin()->globalIndex() != motherGlobalIndex) {
+        return info;
+      }
+    }
+    auto mother = *motherIt;
+    info.found = true;
+    info.pdg = mother.pdgCode();
+    info.px = mother.px();
+    info.py = mother.py();
+    info.pz = mother.pz();
+    info.mass = std::sqrt(mother.e() * mother.e() - mother.px() * mother.px() - mother.py() * mother.py() - mother.pz() * mother.pz());
+    return info;
+  }
+
+  //--------------------------------------------------------------------------------
   // process BCs to get trigger information
   void processBCs(BCsTSsSels const& bcs)
   {
@@ -528,11 +697,17 @@ struct UpcVmRof {
   PROCESS_SWITCH(UpcVmRof, processBCs, "get BCs and trigger information", true);
 
   //--------------------------------------------------------------------------------
-  // get collision information
-  void processCols(ColSel const& col, BCsTSsSels const&, TRKs const& tracks,
-                   aod::FV0As const&, aod::FT0s const&, aod::FDDs const&,
-                   aod::Zdcs const&)
+  // shared collision+track selection; used by both the RD and MC
+  template <typename ColType, typename TracksType>
+  std::vector<typename TracksType::iterator> fillCollisionTables(
+    ColType const& col, TracksType const& tracks,
+    aod::FV0As const&, aod::FT0s const&, aod::FDDs const&, aod::Zdcs const&,
+    bool& outIsTwoBody, bool& outIsFourBody)
   {
+    outIsTwoBody = false;
+    outIsFourBody = false;
+    std::vector<typename TracksType::iterator> selTrks;
+
     // get info for this bc
     auto bc = col.template foundBC_as<BCsTSsSels>();
     if (runNumberCol != bc.runNumber()) { // new run
@@ -547,18 +722,18 @@ struct UpcVmRof {
 
     // select collision
     if (!checkColFlags(col, runNumberCol)) {
-      return;
+      return selTrks;
     }
 
     // accept only -B bcs
-    if (!bcPatternB.test(thisBC)) {
-      return;
-    }
+    // if (!bcPatternB.test(thisBC)) {
+    //  return selTrks;
+    //}
     colTH1Pointers[Form("col/%d/colSel_H", runNumberCol)]->Fill(10);
 
     // select on zVtx
     if (std::abs(col.posZ()) > maxAbsPosZ) {
-      return;
+      return selTrks;
     }
     colTH1Pointers[Form("col/%d/colSel_H", runNumberCol)]->Fill(11);
 
@@ -566,7 +741,7 @@ struct UpcVmRof {
     bool isTwoContributors = (col.numContrib() == NTrksTwoBody);
     bool isFourContributors = (col.numContrib() == NTrksFourBody);
     if (!isTwoContributors && !isFourContributors) {
-      return;
+      return selTrks;
     }
     if (isTwoContributors) {
       colTH1Pointers[Form("col/%d/colSel_H", runNumberCol)]->Fill(16);
@@ -576,7 +751,6 @@ struct UpcVmRof {
     }
 
     // select tracks
-    std::vector<decltype(tracks.begin())> selTrks;
     colTH1Pointers[Form("col/%d/trkSel_H", runNumberCol)]->Fill(0);
     for (const auto& track : tracks) {
       if (!track.isPVContributor()) {
@@ -623,7 +797,7 @@ struct UpcVmRof {
     bool isTwoBody = isTwoContributors && (selTrks.size() == NTrksTwoBody);
     bool isFourBody = isFourContributors && (selTrks.size() == NTrksFourBody);
     if (!isTwoBody && !isFourBody) {
-      return;
+      return selTrks;
     }
 
     //  selected events
@@ -646,12 +820,12 @@ struct UpcVmRof {
       if (bc.foundFT0().isValidTimeA()) { // valid time
         tFT0A = bc.foundFT0().timeA();
         if (std::abs(tFT0A) > maxAbsTimeFT0) {
-          return;
+          return selTrks;
         }
         colTH1Pointers[Form("col/%d/colSel_H", runNumberCol)]->Fill(12);
         aFT0A = bc.foundFT0().sumAmpA();
         if (aFT0A > maxAmpFT0) {
-          return;
+          return selTrks;
         }
         colTH1Pointers[Form("col/%d/colSel_H", runNumberCol)]->Fill(13);
         nFT0A = (bc.foundFT0().amplitudeA()).size();
@@ -660,12 +834,12 @@ struct UpcVmRof {
       if (bc.foundFT0().isValidTimeC()) { // valid time
         tFT0C = bc.foundFT0().timeC();
         if (std::abs(tFT0C) > maxAbsTimeFT0) {
-          return;
+          return selTrks;
         }
         colTH1Pointers[Form("col/%d/colSel_H", runNumberCol)]->Fill(14);
         aFT0C = bc.foundFT0().sumAmpC();
         if (aFT0C > maxAmpFT0) {
-          return;
+          return selTrks;
         }
         colTH1Pointers[Form("col/%d/colSel_H", runNumberCol)]->Fill(15);
         nFT0C = (bc.foundFT0().amplitudeC()).size();
@@ -811,12 +985,274 @@ struct UpcVmRof {
                    tof[0], tof[1], tof[2], tof[3]);
     }
 
-  } // end processCol
-  PROCESS_SWITCH(UpcVmRof, processCols, "get collisions and track information", true);
+    outIsTwoBody = isTwoBody;
+    outIsFourBody = isFourBody;
+    return selTrks;
+  } // end fillCollisionTables
+
+  // RD / MC reco
+  void processDataCols(ColSel const& col, BCsTSsSels const&, TRKs const& tracks,
+                       aod::FV0As const& fv0s, aod::FT0s const& ft0s, aod::FDDs const& fdds, aod::Zdcs const& zdcs)
+  {
+    bool isTwoBody, isFourBody;
+    fillCollisionTables(col, tracks, fv0s, ft0s, fdds, zdcs, isTwoBody, isFourBody);
+  } // end processDataCols
+  PROCESS_SWITCH(UpcVmRof, processDataCols, "process real data or mc reco, no mc truth", true);
+
+  // MC only: fills the same reco tables
+  void processMcCols(ColSelMc const& col, BCsTSsSels const&, TRKsMc const& tracks,
+                     aod::FV0As const& fv0s, aod::FT0s const& ft0s, aod::FDDs const& fdds, aod::Zdcs const& zdcs,
+                     aod::McCollisions const&, aod::McParticles const& mcParticles)
+  {
+    if (genId != -1) {
+      if (!col.has_mcCollision() || col.mcCollision().getGeneratorId() != genId) {
+        return;
+      }
+    }
+
+    bool isTwoBody, isFourBody;
+    auto selTrks = fillCollisionTables(col, tracks, fv0s, ft0s, fdds, zdcs, isTwoBody, isFourBody);
+    if (!isTwoBody && !isFourBody) {
+      return; // event was not written to the reco tables either
+    }
+
+    // MC gen
+    if (isTwoBody) {
+      auto mcPart1 = selTrks[0].has_mcParticle() ? std::optional(selTrks[0].mcParticle()) : std::nullopt;
+      auto mcPart2 = selTrks[1].has_mcParticle() ? std::optional(selTrks[1].mcParticle()) : std::nullopt;
+
+      int pdg1 = 0, pdg2 = 0, sign1 = 0, sign2 = 0, isPrim1 = 0, isPrim2 = 0;
+      float pt1 = -999, eta1 = -999, phi1 = -999, pt2 = -999, eta2 = -999, phi2 = -999;
+      int motherPdg = 0;
+      float motherPt = -999, motherPhi = -999, motherMass = -999, motherRap = -999;
+      float mcPosX = -999, mcPosY = -999, mcPosZ = -999;
+      int mcLocalBC = -999;
+
+      if (mcPart1 && mcPart2) {
+        pdg1 = mcPart1->pdgCode();
+        pt1 = mcPt(mcPart1->px(), mcPart1->py());
+        eta1 = mcEta(mcPart1->px(), mcPart1->py(), mcPart1->pz());
+        phi1 = mcPhi(mcPart1->px(), mcPart1->py());
+        sign1 = (pdg1 > 0) ? 1 : (pdg1 < 0) ? -1
+                                            : 0;
+        isPrim1 = mcPart1->isPhysicalPrimary() ? 1 : 0;
+
+        pdg2 = mcPart2->pdgCode();
+        pt2 = mcPt(mcPart2->px(), mcPart2->py());
+        eta2 = mcEta(mcPart2->px(), mcPart2->py(), mcPart2->pz());
+        phi2 = mcPhi(mcPart2->px(), mcPart2->py());
+        sign2 = (pdg2 > 0) ? 1 : (pdg2 < 0) ? -1
+                                            : 0;
+        isPrim2 = mcPart2->isPhysicalPrimary() ? 1 : 0;
+
+        auto mcCollision = mcPart1->mcCollision();
+        mcPosX = mcCollision.posX();
+        mcPosY = mcCollision.posY();
+        mcPosZ = mcCollision.posZ();
+        mcLocalBC = static_cast<int>(getBcWithinOrbit(mcCollision.template bc_as<BCsTSsSels>().globalBC()));
+
+        float sumPx = mcPart1->px() + mcPart2->px();
+        float sumPy = mcPart1->py() + mcPart2->py();
+        float sumPz = mcPart1->pz() + mcPart2->pz();
+        float sumE = mcPart1->e() + mcPart2->e();
+        motherPt = mcPt(sumPx, sumPy);
+        motherPhi = mcPhi(sumPx, sumPy);
+        motherMass = std::sqrt(sumE * sumE - sumPx * sumPx - sumPy * sumPy - sumPz * sumPz);
+        motherRap = mcRapidity(sumPx, sumPy, sumPz, motherMass);
+
+        MotherInfo mi = findCommonMother(mcParticles, std::vector<typename decltype(mcPart1)::value_type>{*mcPart1, *mcPart2});
+        if (mi.found) {
+          motherPdg = mi.pdg;
+        }
+      }
+
+      twoTrkMCGenTable(
+        motherPdg, motherPt, motherPhi, motherMass, motherRap,
+        pdg1, pt1, eta1, phi1, sign1, isPrim1,
+        pdg2, pt2, eta2, phi2, sign2, isPrim2,
+        mcPosX, mcPosY, mcPosZ, mcLocalBC,
+        twoTrkTable.lastIndex() // row of TwoTrkTable this mc info belongs to
+      );
+    }
+    if (isFourBody) {
+      auto mcPart1 = selTrks[0].has_mcParticle() ? std::optional(selTrks[0].mcParticle()) : std::nullopt;
+      auto mcPart2 = selTrks[1].has_mcParticle() ? std::optional(selTrks[1].mcParticle()) : std::nullopt;
+      auto mcPart3 = selTrks[2].has_mcParticle() ? std::optional(selTrks[2].mcParticle()) : std::nullopt;
+      auto mcPart4 = selTrks[3].has_mcParticle() ? std::optional(selTrks[3].mcParticle()) : std::nullopt;
+
+      int pdg1 = 0, pdg2 = 0, pdg3 = 0, pdg4 = 0;
+      int sign1 = 0, sign2 = 0, sign3 = 0, sign4 = 0;
+      int isPrim1 = 0, isPrim2 = 0, isPrim3 = 0, isPrim4 = 0;
+      float pt1 = -999, eta1 = -999, phi1 = -999;
+      float pt2 = -999, eta2 = -999, phi2 = -999;
+      float pt3 = -999, eta3 = -999, phi3 = -999;
+      float pt4 = -999, eta4 = -999, phi4 = -999;
+      int motherPdg = 0;
+      float motherPt = -999, motherPhi = -999, motherMass = -999, motherRap = -999;
+      float mcPosX = -999, mcPosY = -999, mcPosZ = -999;
+      int mcLocalBC = -999;
+
+      if (mcPart1 && mcPart2 && mcPart3 && mcPart4) {
+        pdg1 = mcPart1->pdgCode();
+        pt1 = mcPt(mcPart1->px(), mcPart1->py());
+        eta1 = mcEta(mcPart1->px(), mcPart1->py(), mcPart1->pz());
+        phi1 = mcPhi(mcPart1->px(), mcPart1->py());
+        sign1 = (pdg1 > 0) ? 1 : (pdg1 < 0) ? -1
+                                            : 0;
+        isPrim1 = mcPart1->isPhysicalPrimary() ? 1 : 0;
+
+        pdg2 = mcPart2->pdgCode();
+        pt2 = mcPt(mcPart2->px(), mcPart2->py());
+        eta2 = mcEta(mcPart2->px(), mcPart2->py(), mcPart2->pz());
+        phi2 = mcPhi(mcPart2->px(), mcPart2->py());
+        sign2 = (pdg2 > 0) ? 1 : (pdg2 < 0) ? -1
+                                            : 0;
+        isPrim2 = mcPart2->isPhysicalPrimary() ? 1 : 0;
+
+        pdg3 = mcPart3->pdgCode();
+        pt3 = mcPt(mcPart3->px(), mcPart3->py());
+        eta3 = mcEta(mcPart3->px(), mcPart3->py(), mcPart3->pz());
+        phi3 = mcPhi(mcPart3->px(), mcPart3->py());
+        sign3 = (pdg3 > 0) ? 1 : (pdg3 < 0) ? -1
+                                            : 0;
+        isPrim3 = mcPart3->isPhysicalPrimary() ? 1 : 0;
+
+        pdg4 = mcPart4->pdgCode();
+        pt4 = mcPt(mcPart4->px(), mcPart4->py());
+        eta4 = mcEta(mcPart4->px(), mcPart4->py(), mcPart4->pz());
+        phi4 = mcPhi(mcPart4->px(), mcPart4->py());
+        sign4 = (pdg4 > 0) ? 1 : (pdg4 < 0) ? -1
+                                            : 0;
+        isPrim4 = mcPart4->isPhysicalPrimary() ? 1 : 0;
+
+        auto mcCollision = mcPart1->mcCollision();
+        mcPosX = mcCollision.posX();
+        mcPosY = mcCollision.posY();
+        mcPosZ = mcCollision.posZ();
+        mcLocalBC = static_cast<int>(getBcWithinOrbit(mcCollision.template bc_as<BCsTSsSels>().globalBC()));
+
+        float sumPx = mcPart1->px() + mcPart2->px() + mcPart3->px() + mcPart4->px();
+        float sumPy = mcPart1->py() + mcPart2->py() + mcPart3->py() + mcPart4->py();
+        float sumPz = mcPart1->pz() + mcPart2->pz() + mcPart3->pz() + mcPart4->pz();
+        float sumE = mcPart1->e() + mcPart2->e() + mcPart3->e() + mcPart4->e();
+        motherPt = mcPt(sumPx, sumPy);
+        motherPhi = mcPhi(sumPx, sumPy);
+        motherMass = std::sqrt(sumE * sumE - sumPx * sumPx - sumPy * sumPy - sumPz * sumPz);
+        motherRap = mcRapidity(sumPx, sumPy, sumPz, motherMass);
+
+        MotherInfo mi = findCommonMother(mcParticles, std::vector<typename decltype(mcPart1)::value_type>{*mcPart1, *mcPart2, *mcPart3, *mcPart4});
+        if (mi.found) {
+          motherPdg = mi.pdg;
+        }
+      }
+
+      fourTrkMCGenTable(
+        motherPdg, motherPt, motherPhi, motherMass, motherRap,
+        pdg1, pt1, eta1, phi1, sign1, isPrim1,
+        pdg2, pt2, eta2, phi2, sign2, isPrim2,
+        pdg3, pt3, eta3, phi3, sign3, isPrim3,
+        pdg4, pt4, eta4, phi4, sign4, isPrim4,
+        mcPosX, mcPosY, mcPosZ, mcLocalBC,
+        fourTrkTable.lastIndex() // row of FourTrkTable this mc info belongs to
+      );
+    }
+  } // end processMcCols
+  PROCESS_SWITCH(UpcVmRof, processMcCols, "process mc truth matched to reco, mc only", false);
+
+  // MC gen all
+  void processMcGenAll(aod::McCollision const& mcCollision, BCsTSsSels const&, aod::McParticles const& mcParticles)
+  {
+    if (genId != -1 && mcCollision.getGeneratorId() != genId) {
+      return;
+    }
+
+    std::vector<decltype(mcParticles.begin())> primaries;
+    for (const auto& part : mcParticles) {
+      if (part.isPhysicalPrimary()) {
+        primaries.push_back(part);
+      }
+    }
+
+    // local BC of the generated collision
+    int localBc = static_cast<int>(getBcWithinOrbit(mcCollision.template bc_as<BCsTSsSels>().globalBC()));
+
+    if (primaries.size() == NTrksTwoBody) {
+      auto p1 = primaries[0];
+      auto p2 = primaries[1];
+
+      int pdg1 = p1.pdgCode();
+      int pdg2 = p2.pdgCode();
+      int sign1 = (pdg1 > 0) ? 1 : (pdg1 < 0) ? -1
+                                              : 0;
+      int sign2 = (pdg2 > 0) ? 1 : (pdg2 < 0) ? -1
+                                              : 0;
+
+      // mother mass/momentum always from summed daughters
+      float sumPx = p1.px() + p2.px();
+      float sumPy = p1.py() + p2.py();
+      float sumPz = p1.pz() + p2.pz();
+      float sumE = p1.e() + p2.e();
+      float motherMass = std::sqrt(sumE * sumE - sumPx * sumPx - sumPy * sumPy - sumPz * sumPz);
+
+      int motherPdg = 0; // 0 = no common mother confirmed in the gen tree
+      MotherInfo mi = findCommonMotherFromIters(mcParticles, std::vector<decltype(p1)>{p1, p2});
+      if (mi.found) {
+        motherPdg = mi.pdg;
+      }
+
+      twoTrkMcGenAllTable(
+        motherPdg, mcPt(sumPx, sumPy), mcPhi(sumPx, sumPy), motherMass, mcRapidity(sumPx, sumPy, sumPz, motherMass),
+        pdg1, mcPt(p1.px(), p1.py()), mcEta(p1.px(), p1.py(), p1.pz()), mcPhi(p1.px(), p1.py()), sign1, 1,
+        pdg2, mcPt(p2.px(), p2.py()), mcEta(p2.px(), p2.py(), p2.pz()), mcPhi(p2.px(), p2.py()), sign2, 1,
+        mcCollision.posX(), mcCollision.posY(), mcCollision.posZ(), localBc);
+    }
+
+    if (primaries.size() == NTrksFourBody) {
+      auto p1 = primaries[0];
+      auto p2 = primaries[1];
+      auto p3 = primaries[2];
+      auto p4 = primaries[3];
+
+      int pdg1 = p1.pdgCode();
+      int pdg2 = p2.pdgCode();
+      int pdg3 = p3.pdgCode();
+      int pdg4 = p4.pdgCode();
+      int sign1 = (pdg1 > 0) ? 1 : (pdg1 < 0) ? -1
+                                              : 0;
+      int sign2 = (pdg2 > 0) ? 1 : (pdg2 < 0) ? -1
+                                              : 0;
+      int sign3 = (pdg3 > 0) ? 1 : (pdg3 < 0) ? -1
+                                              : 0;
+      int sign4 = (pdg4 > 0) ? 1 : (pdg4 < 0) ? -1
+                                              : 0;
+
+      float sumPx = p1.px() + p2.px() + p3.px() + p4.px();
+      float sumPy = p1.py() + p2.py() + p3.py() + p4.py();
+      float sumPz = p1.pz() + p2.pz() + p3.pz() + p4.pz();
+      float sumE = p1.e() + p2.e() + p3.e() + p4.e();
+      float motherMass = std::sqrt(sumE * sumE - sumPx * sumPx - sumPy * sumPy - sumPz * sumPz);
+
+      int motherPdg = 0;
+      MotherInfo mi = findCommonMotherFromIters(mcParticles, std::vector<decltype(p1)>{p1, p2, p3, p4});
+      if (mi.found) {
+        motherPdg = mi.pdg;
+      }
+
+      fourTrkMcGenAllTable(
+        motherPdg, mcPt(sumPx, sumPy), mcPhi(sumPx, sumPy), motherMass, mcRapidity(sumPx, sumPy, sumPz, motherMass),
+        pdg1, mcPt(p1.px(), p1.py()), mcEta(p1.px(), p1.py(), p1.pz()), mcPhi(p1.px(), p1.py()), sign1, 1,
+        pdg2, mcPt(p2.px(), p2.py()), mcEta(p2.px(), p2.py(), p2.pz()), mcPhi(p2.px(), p2.py()), sign2, 1,
+        pdg3, mcPt(p3.px(), p3.py()), mcEta(p3.px(), p3.py(), p3.pz()), mcPhi(p3.px(), p3.py()), sign3, 1,
+        pdg4, mcPt(p4.px(), p4.py()), mcEta(p4.px(), p4.py(), p4.pz()), mcPhi(p4.px(), p4.py()), sign4, 1,
+        mcCollision.posX(), mcCollision.posY(), mcCollision.posZ(), localBc);
+    }
+  } // end processMcGenAll
+  PROCESS_SWITCH(UpcVmRof, processMcGenAll, "process all generated collisions, mc only", false);
 
 }; // end of struct UpcVmRof
 
 WorkflowSpec defineDataProcessing(ConfigContext const& cfgc)
+
 {
   return WorkflowSpec{
     adaptAnalysisTask<UpcVmRof>(cfgc)};
