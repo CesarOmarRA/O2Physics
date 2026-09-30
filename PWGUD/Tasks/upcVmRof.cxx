@@ -13,6 +13,7 @@
 /// \brief analysis of UPC vector meson production ROF by ROF
 ///
 /// \author Guillermo Contreras (jesus.guillermo.contreras.nuno@cern.ch), Czech Technical University in Prague
+/// \author Cesar Omar Ramirez Alvarez (cesar.ramirez@cern.ch), Autonomous University of Puebla
 
 #include "Common/CCDB/EventSelectionParams.h"
 #include "Common/DataModel/EventSelection.h"
@@ -78,6 +79,7 @@ DECLARE_SOA_COLUMN(PosY, posY, float);
 DECLARE_SOA_COLUMN(PosZ, posZ, float);
 DECLARE_SOA_COLUMN(Chi2, chi2, float);
 DECLARE_SOA_COLUMN(LocalBC, localBC, int);
+DECLARE_SOA_COLUMN(NearestBCB, nearestBCB, int);
 DECLARE_SOA_COLUMN(LocalTF, localTF, int);
 DECLARE_SOA_COLUMN(LocalROF, localROF, int);
 DECLARE_SOA_COLUMN(UpcFlag, upcFlag, int);
@@ -186,7 +188,7 @@ DECLARE_SOA_COLUMN(RecoIndex, recoIndex, int);
 
 DECLARE_SOA_TABLE(TwoTrkTable, "AOD", "TWOTRKTABLE",
                   datarows::RunNumber, datarows::PosX, datarows::PosY, datarows::PosZ, datarows::Chi2,
-                  datarows::LocalBC, datarows::LocalTF, datarows::LocalROF, datarows::UpcFlag,
+                  datarows::LocalBC, datarows::NearestBCB, datarows::LocalTF, datarows::LocalROF, datarows::UpcFlag,
                   datarows::AmplitudeFT0A, datarows::AmplitudeFT0C, datarows::AmplitudeFV0A, datarows::AmplitudeFDDA, datarows::AmplitudeFDDC,
                   datarows::TimeFT0A, datarows::TimeFT0C, datarows::TimeFV0A, datarows::TimeFDDA, datarows::TimeFDDC,
                   datarows::ChannelsFT0A, datarows::ChannelsFT0C, datarows::ChannelsFV0A, datarows::ChannelsFDDA, datarows::ChannelsFDDC,
@@ -196,7 +198,7 @@ DECLARE_SOA_TABLE(TwoTrkTable, "AOD", "TWOTRKTABLE",
                   datarows::HasTof1, datarows::HasTof2);
 DECLARE_SOA_TABLE(FourTrkTable, "AOD", "FOURTRKTABLE",
                   datarows::RunNumber, datarows::PosX, datarows::PosY, datarows::PosZ, datarows::Chi2,
-                  datarows::LocalBC, datarows::LocalTF, datarows::LocalROF, datarows::UpcFlag,
+                  datarows::LocalBC, datarows::NearestBCB, datarows::LocalTF, datarows::LocalROF, datarows::UpcFlag,
                   datarows::AmplitudeFT0A, datarows::AmplitudeFT0C, datarows::AmplitudeFV0A, datarows::AmplitudeFDDA, datarows::AmplitudeFDDC,
                   datarows::TimeFT0A, datarows::TimeFT0C, datarows::TimeFV0A, datarows::TimeFDDA, datarows::TimeFDDC,
                   datarows::ChannelsFT0A, datarows::ChannelsFT0C, datarows::ChannelsFV0A, datarows::ChannelsFDDA, datarows::ChannelsFDDC,
@@ -207,12 +209,12 @@ DECLARE_SOA_TABLE(FourTrkTable, "AOD", "FOURTRKTABLE",
                   datarows::Pt4, datarows::Eta4, datarows::Phi4, datarows::Q4, datarows::PidPion4, datarows::PidElectron4, datarows::PidKaon4, datarows::PidProton4,
                   datarows::HasTof1, datarows::HasTof2, datarows::HasTof3, datarows::HasTof4);
 
-DECLARE_SOA_TABLE(TwoTrkMCGenTable, "AOD", "TWOTRKMCGEN",
+DECLARE_SOA_TABLE(TwoTrkRecGenTable, "AOD", "TWOTRKRECGEN",
                   mcgen::McMotherPdg, mcgen::McMotherPt, mcgen::McMotherPhi, mcgen::McMotherMass, mcgen::McMotherRapidity,
                   mcgen::McPdg1, mcgen::McPt1, mcgen::McEta1, mcgen::McPhi1, mcgen::McQ1, mcgen::IsPrimary1,
                   mcgen::McPdg2, mcgen::McPt2, mcgen::McEta2, mcgen::McPhi2, mcgen::McQ2, mcgen::IsPrimary2,
                   mcgen::McPosX, mcgen::McPosY, mcgen::McPosZ, mcgen::McLocalBC, mcgen::RecoIndex);
-DECLARE_SOA_TABLE(FourTrkMCGenTable, "AOD", "FOURTRKMCGEN",
+DECLARE_SOA_TABLE(FourTrkRecGenTable, "AOD", "FOURTRKRECGEN",
                   mcgen::McMotherPdg, mcgen::McMotherPt, mcgen::McMotherPhi, mcgen::McMotherMass, mcgen::McMotherRapidity,
                   mcgen::McPdg1, mcgen::McPt1, mcgen::McEta1, mcgen::McPhi1, mcgen::McQ1, mcgen::IsPrimary1,
                   mcgen::McPdg2, mcgen::McPt2, mcgen::McEta2, mcgen::McPhi2, mcgen::McQ2, mcgen::IsPrimary2,
@@ -220,12 +222,12 @@ DECLARE_SOA_TABLE(FourTrkMCGenTable, "AOD", "FOURTRKMCGEN",
                   mcgen::McPdg4, mcgen::McPt4, mcgen::McEta4, mcgen::McPhi4, mcgen::McQ4, mcgen::IsPrimary4,
                   mcgen::McPosX, mcgen::McPosY, mcgen::McPosZ, mcgen::McLocalBC, mcgen::RecoIndex);
 
-DECLARE_SOA_TABLE(TwoTrkMcGenAllTable, "AOD", "TWOTRKMCGALL",
+DECLARE_SOA_TABLE(TwoTrkGenTable, "AOD", "TWOTRKGEN",
                   mcgen::McMotherPdg, mcgen::McMotherPt, mcgen::McMotherPhi, mcgen::McMotherMass, mcgen::McMotherRapidity,
                   mcgen::McPdg1, mcgen::McPt1, mcgen::McEta1, mcgen::McPhi1, mcgen::McQ1, mcgen::IsPrimary1,
                   mcgen::McPdg2, mcgen::McPt2, mcgen::McEta2, mcgen::McPhi2, mcgen::McQ2, mcgen::IsPrimary2,
                   mcgen::McPosX, mcgen::McPosY, mcgen::McPosZ, mcgen::McLocalBC);
-DECLARE_SOA_TABLE(FourTrkMcGenAllTable, "AOD", "FOURTRKMCGALL",
+DECLARE_SOA_TABLE(FourTrkGenTable, "AOD", "FOURTRKGEN",
                   mcgen::McMotherPdg, mcgen::McMotherPt, mcgen::McMotherPhi, mcgen::McMotherMass, mcgen::McMotherRapidity,
                   mcgen::McPdg1, mcgen::McPt1, mcgen::McEta1, mcgen::McPhi1, mcgen::McQ1, mcgen::IsPrimary1,
                   mcgen::McPdg2, mcgen::McPt2, mcgen::McEta2, mcgen::McPhi2, mcgen::McQ2, mcgen::IsPrimary2,
@@ -239,10 +241,10 @@ struct UpcVmRof {
   // output
   Produces<o2::aod::TwoTrkTable> twoTrkTable;
   Produces<o2::aod::FourTrkTable> fourTrkTable;
-  Produces<o2::aod::TwoTrkMCGenTable> twoTrkMCGenTable;
-  Produces<o2::aod::FourTrkMCGenTable> fourTrkMCGenTable;
-  Produces<o2::aod::TwoTrkMcGenAllTable> twoTrkMcGenAllTable;
-  Produces<o2::aod::FourTrkMcGenAllTable> fourTrkMcGenAllTable;
+  Produces<o2::aod::TwoTrkRecGenTable> twoTrkRecGenTable;
+  Produces<o2::aod::FourTrkRecGenTable> fourTrkRecGenTable;
+  Produces<o2::aod::TwoTrkGenTable> twoTrkGenTable;
+  Produces<o2::aod::FourTrkGenTable> fourTrkGenTable;
 
   // services
   Service<o2::ccdb::BasicCCDBManager> ccdb{}; // access to database
@@ -262,6 +264,9 @@ struct UpcVmRof {
   std::bitset<o2::constants::lhc::LHCMaxBunches> bcPatternB;
   std::bitset<o2::constants::lhc::LHCMaxBunches> bcPatternC;
   std::vector<int> bcbIdx;
+  std::vector<int> vecNearestBCB;
+  std::vector<int> vecDistNearestBCB;
+
   int nbcB = 0;
 
   // variables to store ITS ROF info
@@ -315,6 +320,61 @@ struct UpcVmRof {
     rofShift = alppar->roFrameBiasInBC;
     rofLength = alppar->roFrameLengthInBC;
     rofPerOrbit = static_cast<int>(o2::constants::lhc::LHCMaxBunches / rofLength);
+  }
+
+  //--------------------------------------------------------------------------------
+  // find nearest bcb for this filling scheme
+  void setNearestBCB()
+  {
+    vecNearestBCB.clear();
+    vecDistNearestBCB.clear();
+    for (int i = 0; i < o2::constants::lhc::LHCMaxBunches; i++) {
+      // extend vector
+      vecNearestBCB.push_back(-1);
+      vecDistNearestBCB.push_back(-1);
+      // are we in a bc-b?
+      if (bcPatternB.test(i)) {
+        vecNearestBCB[i] = i;
+        vecDistNearestBCB[i] = 0;
+        continue;
+      }
+      // find nearest previous bc-b
+      int nearestLeft = -1;
+      for (int j = 1; j < o2::constants::lhc::LHCMaxBunches; j++) {
+        int k = i - j;
+        if (k < 0)
+          k = o2::constants::lhc::LHCMaxBunches + k;
+        if (bcPatternB.test(k)) {
+          nearestLeft = k;
+          break;
+        }
+      } // end nearestLeft loop
+
+      // find nearest next bc-b
+      int nearesRight = -1;
+      for (int j = 1; j < o2::constants::lhc::LHCMaxBunches; j++) {
+        int k = i + j;
+        if (k > (o2::constants::lhc::LHCMaxBunches - 1))
+          k = k - o2::constants::lhc::LHCMaxBunches;
+        if (bcPatternB.test(k)) {
+          nearesRight = k;
+          break;
+        }
+      } // end nearesRight loop
+
+      // find nearest bc-b
+      int dLeft = i - nearestLeft;
+      if (dLeft < 0)
+        dLeft += o2::constants::lhc::LHCMaxBunches;
+      int dRight = nearesRight - i;
+      if (dRight < 0)
+        dRight += o2::constants::lhc::LHCMaxBunches;
+      int dMin = std::min(dLeft, dRight);
+      int nearest = ((dMin == dLeft) ? nearestLeft : nearesRight);
+      vecNearestBCB[i] = nearest;
+      int dist = ((dMin == dLeft) ? -dLeft : dRight);
+      vecDistNearestBCB[i] = dist;
+    } // end loop over bc
   }
 
   //--------------------------------------------------------------------------------
@@ -536,9 +596,11 @@ struct UpcVmRof {
   } // end init()
 
   //--------------------------------------------------------------------------------
-  // helper functions for MC gen
+  // helper function for MC: pt
   static float mcPt(float px, float py) { return std::sqrt(px * px + py * py); }
 
+  //--------------------------------------------------------------------------------
+  // helper function for MC: pseudorapidity
   static float mcEta(float px, float py, float pz)
   {
     float p = std::sqrt(px * px + py * py + pz * pz);
@@ -548,6 +610,8 @@ struct UpcVmRof {
     return 0.0f;
   }
 
+  //--------------------------------------------------------------------------------
+  // helper function for MC: azimuth
   static float mcPhi(float px, float py)
   {
     if (std::abs(px) > 1e-10 || std::abs(py) > 1e-10) {
@@ -556,6 +620,8 @@ struct UpcVmRof {
     return 0.0f;
   }
 
+  //--------------------------------------------------------------------------------
+  // helper function for MC: rapidity
   static float mcRapidity(float px, float py, float pz, float mass)
   {
     float energy = std::sqrt(px * px + py * py + pz * pz + mass * mass);
@@ -565,6 +631,7 @@ struct UpcVmRof {
     return 0.0f;
   }
 
+  //--------------------------------------------------------------------------------
   // mother search
   struct MotherInfo {
     bool found = false;
@@ -572,6 +639,7 @@ struct UpcVmRof {
     float px = 0, py = 0, pz = 0, mass = 0;
   };
 
+  //--------------------------------------------------------------------------------
   // checks if all given daughters share the same direct mother: found=false if not
   template <typename T>
   MotherInfo findCommonMother(aod::McParticles const& mcParticles, const std::vector<T>& daughters)
@@ -596,9 +664,10 @@ struct UpcVmRof {
     return info;
   }
 
+  //--------------------------------------------------------------------------------
   // for processMcGenAll: same mother search.
   template <typename IterT>
-  MotherInfo findCommonMotherFromIters(aod::McParticles const& mcParticles, const std::vector<IterT>& daughters)
+  MotherInfo findCommonMotherFromIters(/* aod::McParticles const& mcParticles, */ const std::vector<IterT>& daughters)
   {
     MotherInfo info;
     if (daughters.empty() || !daughters[0].has_mothers()) {
@@ -697,10 +766,10 @@ struct UpcVmRof {
   PROCESS_SWITCH(UpcVmRof, processBCs, "get BCs and trigger information", true);
 
   //--------------------------------------------------------------------------------
-  // shared collision+track selection; used by both the RD and MC
+  // shared collision+track selection; used by both real data and MC
   template <typename ColType, typename TracksType>
   std::vector<typename TracksType::iterator> fillCollisionTables(
-    ColType const& col, TracksType const& tracks,
+    ColType const& col, BCsTSsSels const& bcs, TracksType const& tracks,
     aod::FV0As const&, aod::FT0s const&, aod::FDDs const&, aod::Zdcs const&,
     bool& outIsTwoBody, bool& outIsFourBody)
   {
@@ -715,6 +784,7 @@ struct UpcVmRof {
       getRunInfo(runNumberCol);
       getFillingScheme();
       addColHistos(runNumberCol);
+      setNearestBCB();
     }
     int64_t thisBC = getBcWithinOrbit(bc.globalBC());
     int64_t thisTF = getTimeFrame(bc.globalBC());
@@ -725,10 +795,6 @@ struct UpcVmRof {
       return selTrks;
     }
 
-    // accept only -B bcs
-    // if (!bcPatternB.test(thisBC)) {
-    //  return selTrks;
-    //}
     colTH1Pointers[Form("col/%d/colSel_H", runNumberCol)]->Fill(10);
 
     // select on zVtx
@@ -808,6 +874,40 @@ struct UpcVmRof {
       colTH1Pointers[Form("col/%d/colSel_H", runNumberCol)]->Fill(19);
     }
 
+    // find the bc row for the nearest bc if different from the current one
+    bool foundBCB = true;
+    auto nearbcb = bcs.iteratorAt(bc.globalIndex());
+    if (vecDistNearestBCB[thisBC] > 0) {
+      foundBCB = false;
+      uint64_t gidxBCB = bc.globalIndex() + vecDistNearestBCB[thisBC];
+      if (gidxBCB <= bcs.iteratorAt(bcs.size() - 1).globalIndex()) {
+        while (nearbcb != bcs.end()) {
+          ++nearbcb;
+          if (nearbcb.globalIndex() > gidxBCB) {
+            break;
+          } else if (getBcWithinOrbit(nearbcb.globalBC()) == vecNearestBCB[thisBC]) {
+            foundBCB = true;
+            break;
+          }
+        } // end while
+      }
+    } // end search in future direction
+    if (vecDistNearestBCB[thisBC] < 0) {
+      foundBCB = false;
+      uint64_t gidxBCB = bc.globalIndex() + vecDistNearestBCB[thisBC];
+      if (gidxBCB >= bcs.iteratorAt(0).globalIndex()) {
+        while (nearbcb != bcs.iteratorAt(0)) {
+          --nearbcb;
+          if (nearbcb.globalIndex() < gidxBCB) {
+            break;
+          } else if (getBcWithinOrbit(nearbcb.globalBC()) == vecNearestBCB[thisBC]) {
+            foundBCB = true;
+            break;
+          }
+        } // end while
+      }
+    } // end search in past direction
+
     // FT0 selection
     float aFT0A = 0;
     float aFT0C = 0;
@@ -815,34 +915,34 @@ struct UpcVmRof {
     float tFT0C = 33; // default time to mark events without FT0 info
     int nFT0A = 0;
     int nFT0C = 0;
-    if (bc.has_foundFT0()) {
+    if (foundBCB && nearbcb.has_foundFT0()) {
       // a side
-      if (bc.foundFT0().isValidTimeA()) { // valid time
-        tFT0A = bc.foundFT0().timeA();
+      if (nearbcb.foundFT0().isValidTimeA()) { // valid time
+        tFT0A = nearbcb.foundFT0().timeA();
         if (std::abs(tFT0A) > maxAbsTimeFT0) {
           return selTrks;
         }
         colTH1Pointers[Form("col/%d/colSel_H", runNumberCol)]->Fill(12);
-        aFT0A = bc.foundFT0().sumAmpA();
+        aFT0A = nearbcb.foundFT0().sumAmpA();
         if (aFT0A > maxAmpFT0) {
           return selTrks;
         }
         colTH1Pointers[Form("col/%d/colSel_H", runNumberCol)]->Fill(13);
-        nFT0A = (bc.foundFT0().amplitudeA()).size();
+        nFT0A = (nearbcb.foundFT0().amplitudeA()).size();
       } // a side
       // c side
-      if (bc.foundFT0().isValidTimeC()) { // valid time
-        tFT0C = bc.foundFT0().timeC();
+      if (nearbcb.foundFT0().isValidTimeC()) { // valid time
+        tFT0C = nearbcb.foundFT0().timeC();
         if (std::abs(tFT0C) > maxAbsTimeFT0) {
           return selTrks;
         }
         colTH1Pointers[Form("col/%d/colSel_H", runNumberCol)]->Fill(14);
-        aFT0C = bc.foundFT0().sumAmpC();
+        aFT0C = nearbcb.foundFT0().sumAmpC();
         if (aFT0C > maxAmpFT0) {
           return selTrks;
         }
         colTH1Pointers[Form("col/%d/colSel_H", runNumberCol)]->Fill(15);
-        nFT0C = (bc.foundFT0().amplitudeC()).size();
+        nFT0C = (nearbcb.foundFT0().amplitudeC()).size();
       } // c side
     } // FT0 selection
 
@@ -858,9 +958,9 @@ struct UpcVmRof {
     float aFV0A = 0;
     float tFV0A = 33; // default time to mark events without FV0 info
     int nFV0A = 0;
-    if (bc.has_foundFV0()) {
-      tFV0A = bc.foundFV0().time();
-      auto v = bc.foundFV0().amplitude();
+    if (foundBCB && nearbcb.has_foundFV0()) {
+      tFV0A = nearbcb.foundFV0().time();
+      auto v = nearbcb.foundFV0().amplitude();
       aFV0A = std::accumulate(v.begin(), v.end(), 0.f);
       nFV0A = v.size();
     } // FV0A info
@@ -872,9 +972,9 @@ struct UpcVmRof {
     float aFDDC = 0;
     float tFDDC = 33; // default time to mark events without FDD info
     int nFDDC = 0;
-    if (bc.has_foundFDD()) {
-      tFDDA = bc.foundFDD().timeA();
-      auto vA = bc.foundFDD().chargeA();
+    if (foundBCB && nearbcb.has_foundFDD()) {
+      tFDDA = nearbcb.foundFDD().timeA();
+      auto vA = nearbcb.foundFDD().chargeA();
       // channelPairs = {{0, 4}, {1, 5}, {2, 6}, {3, 7}};
       if (vA[0] > 0 && vA[4] > 0) {
         aFDDA += 0.5 * (vA[0] + vA[4]);
@@ -892,8 +992,8 @@ struct UpcVmRof {
         aFDDA += 0.5 * (vA[3] + vA[7]);
         nFDDA++;
       }
-      tFDDC = bc.foundFDD().timeC();
-      auto vC = bc.foundFDD().chargeC();
+      tFDDC = nearbcb.foundFDD().timeC();
+      auto vC = nearbcb.foundFDD().chargeC();
       // channelPairs = {{0, 4}, {1, 5}, {2, 6}, {3, 7}};
       if (vC[0] > 0 && vC[4] > 0) {
         aFDDC += 0.5 * (vC[0] + vC[4]);
@@ -918,11 +1018,11 @@ struct UpcVmRof {
     float tZNC = -999; // default time to mark events without ZN info
     float eZNA = -999;
     float eZNC = -999;
-    if (bc.has_zdc()) {
-      tZNA = (bc.zdc()).timeZNA();
-      tZNC = (bc.zdc()).timeZNC();
-      eZNA = (bc.zdc()).energyCommonZNA();
-      eZNC = (bc.zdc()).energyCommonZNC();
+    if (foundBCB && nearbcb.has_zdc()) {
+      tZNA = (nearbcb.zdc()).timeZNA();
+      tZNC = (nearbcb.zdc()).timeZNC();
+      eZNA = (nearbcb.zdc()).energyCommonZNA();
+      eZNC = (nearbcb.zdc()).energyCommonZNC();
       if (!std::isfinite(tZNA)) {
         tZNA = -999;
       }
@@ -948,7 +1048,7 @@ struct UpcVmRof {
         tof[1] = 1;
       }
       colTH1Pointers[Form("col/%d/twoTrkTF_H", runNumberCol)]->Fill(thisTF);
-      twoTrkTable(runNumberCol, col.posX(), col.posY(), col.posZ(), col.chi2(), thisBC, thisTF, thisROF, recoFlag,
+      twoTrkTable(runNumberCol, col.posX(), col.posY(), col.posZ(), col.chi2(), thisBC, vecNearestBCB[thisBC], thisTF, thisROF, recoFlag,
                   aFT0A, aFT0C, aFV0A, aFDDA, aFDDC, tFT0A, tFT0C, tFV0A, tFDDA, tFDDC, nFT0A, nFT0C, nFV0A, nFDDA, nFDDC,
                   eZNA, eZNC, tZNA, tZNC,
                   selTrks[0].pt(), selTrks[0].eta(), selTrks[0].phi(), selTrks[0].sign(),
@@ -971,7 +1071,7 @@ struct UpcVmRof {
         tof[3] = 1;
       }
       colTH1Pointers[Form("col/%d/fourTrkTF_H", runNumberCol)]->Fill(thisTF);
-      fourTrkTable(runNumberCol, col.posX(), col.posY(), col.posZ(), col.chi2(), thisBC, thisTF, thisROF, recoFlag,
+      fourTrkTable(runNumberCol, col.posX(), col.posY(), col.posZ(), col.chi2(), thisBC, vecNearestBCB[thisBC], thisTF, thisROF, recoFlag,
                    aFT0A, aFT0C, aFV0A, aFDDA, aFDDC, tFT0A, tFT0C, tFV0A, tFDDA, tFDDC, nFT0A, nFT0C, nFV0A, nFDDA, nFDDC,
                    eZNA, eZNC, tZNA, tZNC,
                    selTrks[0].pt(), selTrks[0].eta(), selTrks[0].phi(), selTrks[0].sign(),
@@ -990,17 +1090,19 @@ struct UpcVmRof {
     return selTrks;
   } // end fillCollisionTables
 
-  // RD / MC reco
-  void processDataCols(ColSel const& col, BCsTSsSels const&, TRKs const& tracks,
+  //--------------------------------------------------------------------------------
+  // process real data or MC at reconstruction level
+  void processDataCols(ColSel const& col, BCsTSsSels const& bcs, TRKs const& tracks,
                        aod::FV0As const& fv0s, aod::FT0s const& ft0s, aod::FDDs const& fdds, aod::Zdcs const& zdcs)
   {
     bool isTwoBody, isFourBody;
-    fillCollisionTables(col, tracks, fv0s, ft0s, fdds, zdcs, isTwoBody, isFourBody);
+    fillCollisionTables(col, bcs, tracks, fv0s, ft0s, fdds, zdcs, isTwoBody, isFourBody);
   } // end processDataCols
   PROCESS_SWITCH(UpcVmRof, processDataCols, "process real data or mc reco, no mc truth", true);
 
-  // MC only: fills the same reco tables
-  void processMcCols(ColSelMc const& col, BCsTSsSels const&, TRKsMc const& tracks,
+  //--------------------------------------------------------------------------------
+  // MC only: fills the same reconstruction tables and the generated information of the reconstructed event
+  void processMcCols(ColSelMc const& col, BCsTSsSels const& bcs, TRKsMc const& tracks,
                      aod::FV0As const& fv0s, aod::FT0s const& ft0s, aod::FDDs const& fdds, aod::Zdcs const& zdcs,
                      aod::McCollisions const&, aod::McParticles const& mcParticles)
   {
@@ -1011,7 +1113,7 @@ struct UpcVmRof {
     }
 
     bool isTwoBody, isFourBody;
-    auto selTrks = fillCollisionTables(col, tracks, fv0s, ft0s, fdds, zdcs, isTwoBody, isFourBody);
+    auto selTrks = fillCollisionTables(col, bcs, tracks, fv0s, ft0s, fdds, zdcs, isTwoBody, isFourBody);
     if (!isTwoBody && !isFourBody) {
       return; // event was not written to the reco tables either
     }
@@ -1066,7 +1168,7 @@ struct UpcVmRof {
         }
       }
 
-      twoTrkMCGenTable(
+      twoTrkRecGenTable(
         motherPdg, motherPt, motherPhi, motherMass, motherRap,
         pdg1, pt1, eta1, phi1, sign1, isPrim1,
         pdg2, pt2, eta2, phi2, sign2, isPrim2,
@@ -1146,7 +1248,7 @@ struct UpcVmRof {
         }
       }
 
-      fourTrkMCGenTable(
+      fourTrkRecGenTable(
         motherPdg, motherPt, motherPhi, motherMass, motherRap,
         pdg1, pt1, eta1, phi1, sign1, isPrim1,
         pdg2, pt2, eta2, phi2, sign2, isPrim2,
@@ -1159,12 +1261,21 @@ struct UpcVmRof {
   } // end processMcCols
   PROCESS_SWITCH(UpcVmRof, processMcCols, "process mc truth matched to reco, mc only", false);
 
-  // MC gen all
-  void processMcGenAll(aod::McCollision const& mcCollision, BCsTSsSels const&, aod::McParticles const& mcParticles)
+  //--------------------------------------------------------------------------------
+  // Fill MC information for all generated events
+  void processMcGen(aod::McCollision const& mcCollision, BCsTSsSels const&, aod::McParticles const& mcParticles)
   {
     if (genId != -1 && mcCollision.getGeneratorId() != genId) {
       return;
     }
+
+    // event counter
+    if (!colTH1Pointers["mcGen/genSel_H"]) {
+      colTH1Pointers["mcGen/genSel_H"] = colTH1Registry.add<TH1>("mcGen/genSel_H",
+                                                                 "pure generator event counter; selID; Counter",
+                                                                 {HistType::kTH1D, {{3, -0.5, 2.5}}});
+    }
+    colTH1Pointers["mcGen/genSel_H"]->Fill(0);
 
     std::vector<decltype(mcParticles.begin())> primaries;
     for (const auto& part : mcParticles) {
@@ -1195,12 +1306,13 @@ struct UpcVmRof {
       float motherMass = std::sqrt(sumE * sumE - sumPx * sumPx - sumPy * sumPy - sumPz * sumPz);
 
       int motherPdg = 0; // 0 = no common mother confirmed in the gen tree
-      MotherInfo mi = findCommonMotherFromIters(mcParticles, std::vector<decltype(p1)>{p1, p2});
+      MotherInfo mi = findCommonMotherFromIters(/* mcParticles,*/ std::vector<decltype(p1)>{p1, p2});
       if (mi.found) {
         motherPdg = mi.pdg;
       }
 
-      twoTrkMcGenAllTable(
+      colTH1Pointers["mcGen/genSel_H"]->Fill(1);
+      twoTrkGenTable(
         motherPdg, mcPt(sumPx, sumPy), mcPhi(sumPx, sumPy), motherMass, mcRapidity(sumPx, sumPy, sumPz, motherMass),
         pdg1, mcPt(p1.px(), p1.py()), mcEta(p1.px(), p1.py(), p1.pz()), mcPhi(p1.px(), p1.py()), sign1, 1,
         pdg2, mcPt(p2.px(), p2.py()), mcEta(p2.px(), p2.py(), p2.pz()), mcPhi(p2.px(), p2.py()), sign2, 1,
@@ -1233,12 +1345,13 @@ struct UpcVmRof {
       float motherMass = std::sqrt(sumE * sumE - sumPx * sumPx - sumPy * sumPy - sumPz * sumPz);
 
       int motherPdg = 0;
-      MotherInfo mi = findCommonMotherFromIters(mcParticles, std::vector<decltype(p1)>{p1, p2, p3, p4});
+      MotherInfo mi = findCommonMotherFromIters(/* mcParticles, */ std::vector<decltype(p1)>{p1, p2, p3, p4});
       if (mi.found) {
         motherPdg = mi.pdg;
       }
 
-      fourTrkMcGenAllTable(
+      colTH1Pointers["mcGen/genSel_H"]->Fill(2);
+      fourTrkGenTable(
         motherPdg, mcPt(sumPx, sumPy), mcPhi(sumPx, sumPy), motherMass, mcRapidity(sumPx, sumPy, sumPz, motherMass),
         pdg1, mcPt(p1.px(), p1.py()), mcEta(p1.px(), p1.py(), p1.pz()), mcPhi(p1.px(), p1.py()), sign1, 1,
         pdg2, mcPt(p2.px(), p2.py()), mcEta(p2.px(), p2.py(), p2.pz()), mcPhi(p2.px(), p2.py()), sign2, 1,
@@ -1247,7 +1360,7 @@ struct UpcVmRof {
         mcCollision.posX(), mcCollision.posY(), mcCollision.posZ(), localBc);
     }
   } // end processMcGenAll
-  PROCESS_SWITCH(UpcVmRof, processMcGenAll, "process all generated collisions, mc only", false);
+  PROCESS_SWITCH(UpcVmRof, processMcGen, "process all generated collisions, mc only", false);
 
 }; // end of struct UpcVmRof
 
