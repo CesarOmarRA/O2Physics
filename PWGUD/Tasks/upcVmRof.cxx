@@ -41,6 +41,7 @@
 #include <TH1.h>
 #include <TH2.h>
 
+#include <algorithm>
 #include <bitset>
 #include <cmath>
 #include <cstdint>
@@ -363,9 +364,11 @@ struct UpcVmRof {
 
       // find nearest bc-b
       int dLeft = i - nearestLeft;
+      // cppcheck-suppress knownConditionTrueFalse
       if (dLeft < 0)
         dLeft += o2::constants::lhc::LHCMaxBunches;
       int dRight = nearesRight - i;
+      // cppcheck-suppress knownConditionTrueFalse
       if (dRight < 0)
         dRight += o2::constants::lhc::LHCMaxBunches;
       int dMin = std::min(dLeft, dRight);
