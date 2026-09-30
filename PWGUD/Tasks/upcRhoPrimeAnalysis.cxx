@@ -14,15 +14,15 @@
 
 #include "PWGUD/DataModel/UDTables.h"
 
-#include "Framework/AnalysisDataModel.h"
-#include "Framework/AnalysisTask.h"
-#include "Framework/runDataProcessing.h"
 #include <CommonConstants/MathConstants.h>
 #include <CommonConstants/PhysicsConstants.h>
+#include <Framework/AnalysisDataModel.h>
+#include <Framework/AnalysisTask.h>
+#include <Framework/runDataProcessing.h>
 
-#include "Math/Vector4D.h"
-#include "TH1F.h"
-#include "TH2F.h"
+#include <Math/Vector4D.h>
+#include <TH1F.h>
+#include <TH2F.h>
 
 #include <cstdint>
 #include <vector>
