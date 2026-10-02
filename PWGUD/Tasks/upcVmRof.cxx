@@ -40,6 +40,7 @@
 
 #include <TH1.h>
 #include <TH2.h>
+#include <TString.h>
 
 #include <algorithm>
 #include <bitset>
@@ -690,7 +691,7 @@ struct UpcVmRof {
         return info;
       }
     }
-    auto mother = *motherIt;
+    const auto& mother = *motherIt;
     info.found = true;
     info.pdg = mother.pdgCode();
     info.px = mother.px();
@@ -881,7 +882,7 @@ struct UpcVmRof {
     auto nearbcb = bcs.iteratorAt(bc.globalIndex());
     if (vecDistNearestBCB[thisBC] > 0) {
       foundBCB = false;
-      uint64_t gidxBCB = bc.globalIndex() + vecDistNearestBCB[thisBC];
+      auto gidxBCB = bc.globalIndex() + vecDistNearestBCB[thisBC];
       if (gidxBCB <= bcs.iteratorAt(bcs.size() - 1).globalIndex()) {
         while (nearbcb != bcs.end()) {
           ++nearbcb;
@@ -896,7 +897,7 @@ struct UpcVmRof {
     } // end search in future direction
     if (vecDistNearestBCB[thisBC] < 0) {
       foundBCB = false;
-      uint64_t gidxBCB = bc.globalIndex() + vecDistNearestBCB[thisBC];
+      auto gidxBCB = bc.globalIndex() + vecDistNearestBCB[thisBC];
       if (gidxBCB >= bcs.iteratorAt(0).globalIndex()) {
         while (nearbcb != bcs.iteratorAt(0)) {
           --nearbcb;
